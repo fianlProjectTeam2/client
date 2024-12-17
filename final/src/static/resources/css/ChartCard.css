@@ -1,0 +1,28 @@
+.chart-card {
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  background-color: #fff;
+  text-align: center;
+  width: 80%;
+  height: 80%;
+  padding: 0px;
+  border: 0;
+  margin-bottom: 10%;
+
+  @media only screen and (max-width: 768px) {
+    width: 50%;
+    height: 25%;
+  }
+}
+
+.chart-placeholder {
+  padding: 200px;
+  background-color: #f9f9f9;
+  border: 1px dashed #ccc;
+  border-radius: 5px;
+
+  @media only screen and (max-width: 768px) {
+    padding: 35%;
+  }
+}

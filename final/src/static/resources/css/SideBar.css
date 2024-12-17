@@ -1,0 +1,20 @@
+.sidebar {
+  width: 200px;
+  padding: 10px;
+  background-color: #f4f4f4;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+
+  @media only screen and (max-width: 768px) {
+    width: 20%;
+  }
+}
+
+.range-slider {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.range-slider label {
+  font-weight: bold;
+}
