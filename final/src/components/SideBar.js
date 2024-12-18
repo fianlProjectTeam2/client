@@ -1,44 +1,33 @@
 import React, { useState } from "react";
-import "../static/resources/css/SideBar.css";
+import "../static/resources/css/Styles.css";
 
-function SideBar() {
-  const [minPrice, setMinPrice] = useState(0);
-  const [maxPrice, setMaxPrice] = useState(1000000);
-
-  const handleMinChange = (e) => {
-    const value = Math.min(Number(e.target.value), maxPrice - 1000); // Prevent overlap
-    setMinPrice(value);
-  };
-
-  const handleMaxChange = (e) => {
-    const value = Math.max(Number(e.target.value), minPrice + 1000); // Prevent overlap
-    setMaxPrice(value);
-  };
-
+const SideBar = ({ isVisible, toggleSidebar, stocks }) => {
   return (
-    <aside className="sidebar">
-      <h2>가격 범위</h2>
-      <div className="range-slider">
-        <label>최소 가격: {minPrice.toLocaleString()} 원</label>
-        <input
-          type="range"
-          min="0"
-          max="1000000"
-          value={minPrice}
-          onChange={handleMinChange}
-        />
-
-        <label>최대 가격: {maxPrice.toLocaleString()} 원</label>
-        <input
-          type="range"
-          min="0"
-          max="1000000"
-          value={maxPrice}
-          onChange={handleMaxChange}
-        />
-      </div>
-    </aside>
+    <>
+      {/* 사이드바 */}
+      <button className="toggle-btn" onClick={toggleSidebar}>
+        {isVisible ? "마이페이지 닫기" : "마이페이지 열기"}
+      </button>
+      <aside className={`sidebar ${isVisible ? "visible" : ""}`}>
+        <h3>관심 종목 TOP 10</h3>
+        <ul>
+          {stocks.map((stock) => (
+            <li key={stock.id}>
+              {stock.name} - {stock.price}원
+              <span
+                style={{
+                  color: stock.change > 0 ? "green" : "red",
+                }}
+              >
+                ({stock.change > 0 ? "+" : ""}
+                {stock.change}%)
+              </span>
+            </li>
+          ))}
+        </ul>
+      </aside>
+    </>
   );
-}
+};
 
 export default SideBar;

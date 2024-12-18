@@ -1,0 +1,240 @@
+/* 글로벌 스타일 */
+body {
+  margin: 0;
+  font-family: "Noto Sans KR", sans-serif;
+  background-color: #f9f9f9;
+  color: #333;
+  line-height: 1.6;
+}
+
+a {
+  text-decoration: none;
+  color: #007bff;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* Header 스타일 */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 20px;
+  background-color: #ffffff;
+  color: #333;
+  border-bottom: 1px solid #ddd;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.header .logo {
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: #007bff;
+}
+
+.header ul {
+  display: flex;
+  list-style: none;
+  gap: 20px;
+  margin: 0;
+  padding: 0;
+}
+
+.header ul li {
+  cursor: pointer;
+  transition: color 0.3s;
+}
+
+.header ul li:hover {
+  color: #007bff;
+}
+
+.header input {
+  padding: 5px 10px;
+  border-radius: 5px;
+  border: 1px solid #ddd;
+  outline: none;
+}
+
+/* 주가지수 섹션 */
+.stocks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: space-between;
+  margin: 20px;
+}
+
+.stock-card {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #f0f8ff;
+  padding: 20px;
+  border-radius: 8px;
+  text-align: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease-in-out;
+  flex: 0 1 calc(50% - 10px);
+  box-sizing: border-box;
+}
+
+.stock-card:hover {
+  transform: translateY(-5px);
+}
+
+.stock-card h3 {
+  margin: 0;
+  font-size: 1.2rem;
+  color: #007bff;
+}
+
+.stock-card p {
+  margin: 10px 0;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #333;
+}
+
+.stock-card span {
+  font-size: 1rem;
+  color: #28a745;
+}
+
+.stock-card .negative {
+  color: #dc3545;
+}
+
+/* 뉴스 카드 스타일 */
+.news-card {
+  background-color: #ffffff;
+  display: flex;
+  gap: 10px;
+  margin: 10px;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.news-card img {
+  width: 120px;
+  height: auto;
+}
+
+.news-content {
+  padding: 10px;
+  color: #333;
+}
+
+.news-content h4 {
+  margin: 0 0 5px;
+  font-size: 1rem;
+  color: #007bff;
+}
+
+.news-content p {
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.sidebar {
+  position: relative;
+  width: 0;
+  background-color: #f0f0f0;
+  overflow: hidden;
+  transition: all 0.3s ease-in-out;
+  box-shadow: -2px 0 4px rgba(0, 0, 0, 0.2);
+}
+
+.sidebar.visible {
+  width: 23%;
+}
+
+.close-btn {
+  display: block;
+  margin: 10px auto;
+  padding: 5px 10px;
+  border: none;
+  background-color: #007bff;
+  color: #fff;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+.close-btn:hover {
+  background-color: #0056b3;
+}
+
+.toggle-btn {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background-color: #007bff;
+  color: #ffffff;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 15px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.3s ease;
+  z-index: 1100;
+}
+
+/* Footer 스타일 */
+.footer {
+  background-color: #ffffff;
+  color: #333;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 40px;
+  border-top: 1px solid #ddd;
+}
+
+.footer ul {
+  list-style: none;
+  display: flex;
+  gap: 15px;
+  margin: 0;
+  padding: 0;
+}
+
+.footer p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.footer ul li {
+  cursor: pointer;
+  color: #007bff;
+  transition: color 0.3s;
+}
+
+.footer ul li:hover {
+  color: #0056b3;
+}
+
+main {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 20px;
+}
+
+.layout {
+  display: flex;
+  transition: all 0.3s ease-in-out; 
+}
+
+.content {
+  flex: 1;
+  padding: 20px;
+  transition: all 0.3s ease-in-out;
+}
+
+.layout.sidebar-visible .content {
+  flex: 77%;
+}
