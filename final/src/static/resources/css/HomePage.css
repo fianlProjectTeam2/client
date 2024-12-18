@@ -10,21 +10,21 @@
   flex-direction: column;
   gap: 20px;
   padding: 20px;
+  margin-left: -15px;
   background-color: #ffffff;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .stocks {
-  display: flex;
   flex-wrap: wrap;
   gap: 20px;
   justify-content: space-between;
 }
 
 .news {
-  display: flex;
   flex-wrap: wrap;
   gap: 20px;
   justify-content: space-between;
 }
+

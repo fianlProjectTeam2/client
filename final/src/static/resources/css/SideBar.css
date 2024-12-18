@@ -1,7 +1,8 @@
 .toggle-btn {
   position: fixed;
-  top: 20px;
+  top: 0.6%;
   right: 20px;
+  height: 4%;
   background-color: #007bff;
   color: #ffffff;
   border: none;
@@ -11,6 +12,29 @@
   font-size: 1rem;
   transition: background-color 0.3s ease;
   z-index: 1100;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+@media screen and (max-width: 768px) {
+  .toggle-btn {
+    color: transparent;
+    font-size: 0;
+  }
+
+  .sidebar.visible{
+    h3{
+      padding-top: 30px;
+      font-size: 20px;
+    }
+    
+    li{
+      font-size: 15px;
+    }
+  }
 }
 
 .toggle-btn:hover {
@@ -28,6 +52,7 @@
 
 .sidebar.visible {
   width: 23%;
+  padding-top: 2%;
 }
 
 .sidebar h3 {
