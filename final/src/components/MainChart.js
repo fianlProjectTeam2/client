@@ -63,10 +63,10 @@ const MainChart = () => {
           text: "종가 (단위: 원)",
         },
         ticks: {
-          stepSize: 100, // Y축 단위
-          callback: (value) => `${value} 원`, // 값에 '원' 단위 추가
+          stepSize: 100,
+          callback: (value) => `${value} 원`,
         },
-        beginAtZero: false, // Y축 시작을 데이터 값에 맞춤
+        beginAtZero: false,
       },
     },
   };

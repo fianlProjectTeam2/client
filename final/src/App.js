@@ -19,14 +19,12 @@ function App() {
     <BrowserRouter>
       <Header />
       <div className={`layout ${isSidebarVisible ? "sidebar-visible" : ""}`}>
-        {/* 메인 콘텐츠 */}
         <main className="content">
           <Suspense fallback={<div>Loading...</div>}>
             <HomePage />
           </Suspense>
         </main>
 
-        {/* 사이드바 */}
         <SideBar isVisible={isSidebarVisible} toggleSidebar={toggleSidebar} />
       </div>
       <Footer />

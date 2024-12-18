@@ -2,11 +2,12 @@ import React, { useState } from "react";
 import StockCard from "../components/StockCard";
 import NewsCard from "../components/NewsCard";
 import MainChart from "../components/MainChart";
+import "../static/resources/css/HomePage.css";
 
 const HomePage = (setCurrentPage) => {
   const stocks = [
     { id: 1, name: "코스피", price: "2,479.24", change: 0.9 },
-    { id: 2, name: "코스닥", price: "690.72", change: -0.5 },
+    { id: 2, name: "코스닥", price: "2690.72", change: -0.5 },
   ];
 
   const news = [
@@ -26,7 +27,6 @@ const HomePage = (setCurrentPage) => {
 
   return (
     <div className="app">
-      {/* 메인 콘텐츠 */}
       <main className="content">
         <div className="stocks">
           {stocks.map((stock) => (
@@ -38,6 +38,7 @@ const HomePage = (setCurrentPage) => {
             />
           ))}
         </div>
+        <MainChart />
         <div className="news">
           {news.map((item) => (
             <NewsCard
@@ -48,7 +49,6 @@ const HomePage = (setCurrentPage) => {
             />
           ))}
         </div>
-        <MainChart />
       </main>
     </div>
   );
