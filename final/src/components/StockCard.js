@@ -1,5 +1,5 @@
 import React from "react";
-import "../static/resources/css/Styles.css";
+import "../static/resources/css/StockCard.css";
 
 const StockCard = ({ title, value, change }) => {
   return (

@@ -1,17 +1,9 @@
 import React, { useState } from "react";
-import Header from "../components/Header";
-import SideBar from "../components/SideBar";
-import Footer from "../components/Footer";
 import StockCard from "../components/StockCard";
 import NewsCard from "../components/NewsCard";
+import MainChart from "../components/MainChart";
 
-const HomePage = () => {
-  const [isSidebarVisible, setIsSidebarVisible] = useState(false);
-
-  const toggleSidebar = () => {
-    setIsSidebarVisible(!isSidebarVisible);
-  };
-
+const HomePage = (setCurrentPage) => {
   const stocks = [
     { id: 1, name: "코스피", price: "2,479.24", change: 0.9 },
     { id: 2, name: "코스닥", price: "690.72", change: -0.5 },
@@ -34,36 +26,30 @@ const HomePage = () => {
 
   return (
     <div className="app">
-      <Header />
-      <div className={`layout ${isSidebarVisible ? "sidebar-visible" : ""}`}>
-        {/* 메인 콘텐츠 */}
-        <main className="content">
-          <div className="stocks">
-            {stocks.map((stock) => (
-              <StockCard
-                key={stock.id}
-                title={stock.name}
-                value={stock.price}
-                change={stock.change}
-              />
-            ))}
-          </div>
-          <div className="news">
-            {news.map((item) => (
-              <NewsCard
-                key={item.id}
-                title={item.title}
-                time={item.time}
-                image={item.image}
-              />
-            ))}
-          </div>
-        </main>
-
-        {/* 사이드바 */}
-        <SideBar isVisible={isSidebarVisible} toggleSidebar={toggleSidebar} stocks={stocks} />
-      </div>
-      <Footer />
+      {/* 메인 콘텐츠 */}
+      <main className="content">
+        <div className="stocks">
+          {stocks.map((stock) => (
+            <StockCard
+              key={stock.id}
+              title={stock.name}
+              value={stock.price}
+              change={stock.change}
+            />
+          ))}
+        </div>
+        <div className="news">
+          {news.map((item) => (
+            <NewsCard
+              key={item.id}
+              title={item.title}
+              time={item.time}
+              image={item.image}
+            />
+          ))}
+        </div>
+        <MainChart />
+      </main>
     </div>
   );
 };
