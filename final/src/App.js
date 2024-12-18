@@ -1,45 +1,35 @@
 import "./App.css";
+import "./static/resources/css/Styles.css";
 import React, { useState, Suspense, lazy, useEffect } from "react";
 import { BrowserRouter } from "react-router-dom";
-import HomePage from "./pages/HomePage";
+import Header from "./components/Header";
+import SideBar from "./components/SideBar";
+import Footer from "./components/Footer";
 
-const Main = lazy(() => import("./pages/Main"));
+const HomePage = lazy(() => import("./pages/HomePage"));
 
 function App() {
-  const [currentPage, setCurrentPage] = useState("loading");
+  const [isSidebarVisible, setIsSidebarVisible] = useState(false);
 
-  const appStyle = {
-    display: "flex",
-    flexDirection: "column",
-    height: "100vh",
+  const toggleSidebar = () => {
+    setIsSidebarVisible(!isSidebarVisible);
   };
-
-  const layoutStyle = {
-    display: "flex",
-    flex: 1,
-  };
-
-  const renderContent = () => {
-    switch (currentPage) {
-      case "main":
-        return <Main setCurrentPage={setCurrentPage} />;
-      default:
-        return <div>Loading...</div>;
-    }
-  };
-
-  useEffect(() => {
-    const checkSession = async () => {
-      setCurrentPage("main");
-    };
-    checkSession();
-  }, []);
 
   return (
     <BrowserRouter>
-      <div>
-        <HomePage />
+      <Header />
+      <div className={`layout ${isSidebarVisible ? "sidebar-visible" : ""}`}>
+        {/* 메인 콘텐츠 */}
+        <main className="content">
+          <Suspense fallback={<div>Loading...</div>}>
+            <HomePage />
+          </Suspense>
+        </main>
+
+        {/* 사이드바 */}
+        <SideBar isVisible={isSidebarVisible} toggleSidebar={toggleSidebar} />
       </div>
+      <Footer />
     </BrowserRouter>
   );
 }

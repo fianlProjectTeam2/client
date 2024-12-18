@@ -1,0 +1,25 @@
+.news-card {
+  background-color: #ffffff;
+  display: flex;
+  gap: 10px;
+  margin: 10px;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.news-content {
+  padding: 10px;
+  color: #333;
+}
+
+.news-content h4 {
+  margin: 0 0 5px;
+  font-size: 1rem;
+  color: #007bff;
+}
+
+.news-content p {
+  font-size: 0.85rem;
+  color: #666;
+}
