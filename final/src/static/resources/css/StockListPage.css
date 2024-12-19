@@ -1,0 +1,45 @@
+.pageContainer {
+  font-family: Roboto, Arial, sans-serif;
+  padding: 20px;
+  background-color: #f3f4f6;
+}
+
+.titleSection {
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.title {
+  font-size: 24px;
+  font-weight: bold;
+  color: #333;
+}
+
+.subtitle {
+  font-size: 14px;
+  color: #666;
+}
+.filterSection {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.selectBox {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: #fff;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  overflow: hidden;
+}
+td {
+  text-align: center;
+}
