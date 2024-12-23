@@ -23,18 +23,29 @@ function App() {
       case "home":
         return <HomePage onLogout={() => setCurrentPage("login")} />;
       case "stock":
-        return <StockListPage setCurrentPage={setCurrentPage} onLogout={() => setCurrentPage("login")} />;
+        return (
+          <StockListPage
+            setCurrentPage={setCurrentPage}
+            onLogout={() => setCurrentPage("login")}
+          />
+        );
       case "StockChartDetail":
-        return <StockChartDetailPage onLogout={() => setCurrentPage("login")} />;
+        return (
+          <StockChartDetailPage
+            toggleSidebar={toggleSidebar}
+            isSidebarVisible={isSidebarVisible}
+            onLogout={() => setCurrentPage("login")}
+          />
+        );
       default:
-        return <HomePage onLogout={() => setCurrentPage("login")} />;;
+        return <HomePage onLogout={() => setCurrentPage("login")} />;
     }
   };
 
   return (
     <BrowserRouter>
       <Header setCurrentPage={setCurrentPage} />
-      <div className={`layout ${isSidebarVisible ? "sidebar-visible" : ""}`}>
+      <div className="layout">
         <main className="content">
           <Suspense fallback={<div>Loading...</div>}>
             {renderContent()}
