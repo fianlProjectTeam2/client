@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import ReactApexChart from "react-apexcharts";
 import "../static/resources/css/StockChartDetailPage.css";
 import ChartAPI from "../api/ChartAPI";
+import AuthAPI from "../api/AuthAPI";
 
 const StockChartDetailPage = ({ stock, toggleSidebar, isSidebarVisible }) => {
   const [candleChartOptions, setCandleChartOptions] = useState(null);
@@ -15,8 +16,18 @@ const StockChartDetailPage = ({ stock, toggleSidebar, isSidebarVisible }) => {
   const [price, setPrice] = useState(53900);
   const [quantity, setQuantity] = useState(0);
   const [totalAmount, setTotalAmount] = useState(0);
-
   const [stockName, setStockName] = useState();
+  const [session, setSession] = useState();
+
+  const fetchSession = async () => {
+    try {
+      const response = await AuthAPI.sessionCheck();
+      setSession(response.data);
+      console.log(response);
+    } catch (error) {
+      console.error("Error", error);
+    }
+  };
 
   const fetchData = async () => {
     try {
@@ -53,13 +64,15 @@ const StockChartDetailPage = ({ stock, toggleSidebar, isSidebarVisible }) => {
     }
   };
 
-  console.log(dailyData);
-
   useEffect(() => {
     if (stock?.itmsNm) {
       fetchData();
     }
   }, [stock]);
+
+  useEffect(() => {
+    fetchSession();
+  }, []);
 
   const handleQuantityChange = (type) => {
     if (type === "increment") {
@@ -70,7 +83,7 @@ const StockChartDetailPage = ({ stock, toggleSidebar, isSidebarVisible }) => {
   };
 
   const handleNumberChange = (number) => {
-    const calculatedQuantity = totalAmount + number;
+    const calculatedQuantity = quantity + number;
     setQuantity(calculatedQuantity);
   };
 
@@ -271,21 +284,14 @@ const StockChartDetailPage = ({ stock, toggleSidebar, isSidebarVisible }) => {
                   </button>
                 </div>
                 <div className="quantity-buttons">
-                  <button onClick={() => handleNumberChange(10)}>
-                    +10
-                  </button>
-                  <button onClick={() => handleNumberChange(25)}>
-                    +25
-                  </button>
-                  <button onClick={() => handleNumberChange(50)}>
-                    +50
-                  </button>
+                  <button onClick={() => handleNumberChange(10)}>+10</button>
+                  <button onClick={() => handleNumberChange(25)}>+25</button>
+                  <button onClick={() => handleNumberChange(50)}>+50</button>
                 </div>
               </div>
 
               <hr />
 
-              {/* 금액 */}
               <div className="form-summary">
                 <div className="summary-row">
                   <span>구매가능 금액</span>
@@ -297,10 +303,15 @@ const StockChartDetailPage = ({ stock, toggleSidebar, isSidebarVisible }) => {
                 </div>
               </div>
 
-              {/* 버튼 */}
-              <button className="order-button" disabled>
-                로그인하고 구매하기
-              </button>
+              {session ? (
+                <button className="order-button">
+                  구매하기
+                </button>
+              ) : (
+                <button className="order-button" disabled>
+                  로그인하고 구매하기
+                </button>
+              )}
             </div>
           </div>
         </div>
