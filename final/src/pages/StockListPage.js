@@ -2,27 +2,37 @@ import React, { useState, useEffect } from "react";
 import "../static/resources/css/StockListPage.css";
 import ChartAPI from "../api/ChartAPI";
 
-const StockListPage = ({ setCurrentPage }) => {
-  const [numOfRows, setNumOfRows] = useState(1);
+const StockListPage = ({ setCurrentPage, setSelectedStock }) => {
   const [chartData, setChartData] = useState([]);
   const [error, setError] = useState(null);
 
   const fetchData = async () => {
     try {
-      const response = await ChartAPI.fetchChartData(numOfRows);
+      const response = await ChartAPI.fetchChartData();
       console.log(response.data);
       const responses = response?.data || [];
       const items = responses.flatMap((res) => res?.response?.body?.items?.item || []);
 
       const transformedData = items.map((item) => ({
-        symbol: item.srtnCd, // 종목 코드
-        name: item.itmsNm, // 종목 이름
-        currentPrice: parseFloat(item.clpr), // 현재가
-        changeRate: parseFloat(item.fltRt), // 등락률
-        marketCap: parseFloat(item.mrktTotAmt) / 1e8, // 시가총액 (단위: 억 원)
-        volume: parseInt(item.trqu, 10), // 거래량
+        symbol: item.isinCd, // 종목 코드
+
+
+        basDt : item.basDt, //기준일자
+        clpr : parseFloat(item.clpr), // 하루 최종가격
+        fltRt : parseFloat(item.fltRt), // 등락률 
+        hipr : item.hipr, // 고가
+        isinCd : item.isinCd, // 종목코드
+        itmsNm : item.itmsNm, // 종목 이름
+        lopr : item.lopr, // 저가
+        lstgStCnt : item.lstgStCnt, // 종목 상장주식수
+        mkp : item.mkp, // 시가
+        mrktCtg : item.mrktCtg, // 시장구분
+        mrktTotAmt : parseFloat(item.mrktTotAmt)/ 1e8, // 시가총액
+        srtnCd : item.srtnCd, // 단축코드
+        trPrc : item.trPrc, // 거래대금 총 체결 금액
+        trqu : parseInt(item.trqu, 10), // 거래량 하루 거래량
         analysis: "-", // 분석 데이터는 없으므로 기본값
-        priceChangeRate: parseFloat(item.vs), // 가격 변화량
+        vs : parseFloat(item.vs), // 대비, 전일 대비 등락
       }));
       setChartData(transformedData);
     } catch (error) {
@@ -38,6 +48,11 @@ const StockListPage = ({ setCurrentPage }) => {
   const stocks = [
     ...chartData,
   ];
+
+  const handleRowClick = (stock) => {
+    setSelectedStock(stock); 
+    setCurrentPage("StockChartDetail");
+  };
 
   return (
     <div className="pageContainer">
@@ -79,23 +94,23 @@ const StockListPage = ({ setCurrentPage }) => {
                 transition: "background-color 0.3s ease",
                 backgroundColor: index % 2 === 0 ? "#f8f8f8" : "#ffffff",
               }}
-              onClick={() => setCurrentPage("StockChartDetail")}
+              onClick={() => handleRowClick(stock)}
             >
               <td>{index + 1}</td>
-              <td>{stock.name}</td>
-              <td>{stock.currentPrice.toLocaleString()}원</td>
-              <td style={{ color: stock.changeRate > 0 ? "red" : "blue" }}>
-                {stock.changeRate > 0 ? "+" : ""}
-                {stock.changeRate}%
+              <td>{stock.itmsNm}</td>
+              <td>{stock.mkp.toLocaleString()}원</td>
+              <td style={{ color: stock.fltRt > 0 ? "red" : "blue" }}>
+                {stock.fltRt > 0 ? "+" : ""}
+                {stock.fltRt}%
               </td>
-              <td>{stock.marketCap.toLocaleString()}억원</td>
-              <td>{stock.volume.toLocaleString()}주</td>
+              <td>{stock.mrktTotAmt.toLocaleString()}억원</td>
+              <td>{stock.lstgStCnt.toLocaleString()}주</td>
               <td>{stock.analysis || "-"}</td>
               <td
-                style={{ color: stock.priceChangeRate > 0 ? "red" : "blue" }}
+                style={{ color: stock.vs > 0 ? "red" : "blue" }}
               >
-                {stock.priceChangeRate > 0 ? "+" : ""}
-                {stock.priceChangeRate}원
+                {stock.vs > 0 ? "+" : ""}
+                {stock.vs}원
               </td>
             </tr>
           ))}

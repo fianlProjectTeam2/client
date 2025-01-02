@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from "react";
 import ReactApexChart from "react-apexcharts";
 import "../static/resources/css/StockChartDetailPage.css";
+import ChartAPI from "../api/ChartAPI";
 
-const StockChartDetailPage = ({ toggleSidebar, isSidebarVisible }) => {
+const StockChartDetailPage = ({ stock, toggleSidebar, isSidebarVisible }) => {
   const [candleChartOptions, setCandleChartOptions] = useState(null);
   const [barChartOptions, setBarChartOptions] = useState(null);
   const [dailyData, setDailyData] = useState([]);
+  const [dailys, setDailys] = useState([]);
   const [investorData, setInvestorData] = useState([]);
 
   const [orderType, setOrderType] = useState("일반 주문");
@@ -13,6 +15,51 @@ const StockChartDetailPage = ({ toggleSidebar, isSidebarVisible }) => {
   const [price, setPrice] = useState(53900);
   const [quantity, setQuantity] = useState(0);
   const [totalAmount, setTotalAmount] = useState(0);
+
+  const [stockName, setStockName] = useState();
+
+  const fetchData = async () => {
+    try {
+      // stock.itmsNm을 기반으로 데이터를 가져오기
+      const response = await ChartAPI.fetchChartData(10, stock.itmsNm);
+      const responses = response?.data || [];
+      const items = responses.flatMap(
+        (res) => res?.response?.body?.items?.item || []
+      );
+      console.log(items);
+      const transformedData = items.map((item) => ({
+        symbol: item.isinCd, // 종목 코드
+        basDt: item.basDt, // 기준일자
+        clpr: parseFloat(item.clpr), // 하루 최종가격
+        fltRt: parseFloat(item.fltRt), // 등락률
+        hipr: item.hipr, // 고가
+        isinCd: item.isinCd, // 종목코드
+        itmsNm: item.itmsNm, // 종목 이름
+        lopr: item.lopr, // 저가
+        lstgStCnt: item.lstgStCnt, // 종목 상장주식수
+        mkp: item.mkp, // 시가
+        mrktCtg: item.mrktCtg, // 시장구분
+        mrktTotAmt: parseFloat(item.mrktTotAmt) / 1e8, // 시가총액
+        srtnCd: item.srtnCd, // 단축코드
+        trPrc: item.trPrc, // 거래대금 총 체결 금액
+        trqu: parseInt(item.trqu, 10), // 거래량 하루 거래량
+        analysis: "-", // 분석 데이터는 없으므로 기본값
+        vs: parseFloat(item.vs), // 대비, 전일 대비 등락
+      }));
+
+      setDailyData(transformedData.reverse());
+    } catch (error) {
+      console.error("Error", error);
+    }
+  };
+
+  console.log(dailyData);
+
+  useEffect(() => {
+    if (stock?.itmsNm) {
+      fetchData();
+    }
+  }, [stock]);
 
   const handleQuantityChange = (type) => {
     if (type === "increment") {
@@ -22,120 +69,72 @@ const StockChartDetailPage = ({ toggleSidebar, isSidebarVisible }) => {
     }
   };
 
-  const handlePercentageChange = (percentage) => {
-    const calculatedQuantity = Math.floor(totalAmount * (percentage / 100));
+  const handleNumberChange = (number) => {
+    const calculatedQuantity = totalAmount + number;
     setQuantity(calculatedQuantity);
   };
 
   useEffect(() => {
-    const candleOptions = {
-      series: [
-        {
-          data: [
-            { x: "12월 11일", y: [7200, 7400, 4700, 4805] },
-            { x: "12월 12일", y: [4800, 5000, 4600, 4895] },
-            { x: "12월 13일", y: [4900, 5000, 4850, 4995] },
-            { x: "12월 14일", y: [4950, 5700, 4900, 5700] },
-            { x: "12월 15일", y: [5700, 6700, 5600, 6650] },
-            { x: "12월 18일", y: [6650, 6700, 6600, 6660] },
-          ],
+    if (!dailyData || dailyData.length === 0) return;
+
+    const generateChartOptions = () => {
+      // 캔들스틱 차트 데이터 생성
+      const candleData = dailyData.map((item) => ({
+        x: item.basDt,
+        y: [item.mkp, item.hipr, item.lopr, item.clpr],
+      }));
+
+      const candleOptions = {
+        series: [{ data: candleData }],
+        options: {
+          chart: { type: "candlestick", height: 350 },
+          xaxis: { type: "category", labels: { rotate: -45 } },
+          plotOptions: {
+            candlestick: {
+              colors: {
+                upward: "#FF0000", // 빨간색 (상승)
+                downward: "#0000FF", // 파란색 (하락)
+              },
+            },
+          },
         },
-      ],
-      options: {
-        chart: { type: "candlestick", height: 350 },
-        xaxis: { type: "category" },
-      },
+      };
+
+      // 바 차트 데이터 생성
+      const barData = dailyData.map((item) => item.vs);
+      const barCategories = dailyData.map((item) => item.basDt);
+
+      const barOptions = {
+        series: [{ name: "전일대비 등락", data: barData }],
+        options: {
+          chart: { type: "bar", height: 350 },
+          xaxis: { categories: barCategories },
+          tooltip: { enabled: true },
+        },
+      };
+
+      // 일별 데이터 생성
+      const daily = dailyData.map((item) => ({
+        date: item.basDt,
+        price: `${item.clpr.toLocaleString()}원`,
+        rate: `${item.fltRt > 0 ? "+" : ""}${item.fltRt.toFixed(2)}%`,
+        volume: `${item.trqu.toLocaleString()}주`,
+        amount: `${(item.trPrc / 1e8).toFixed(2)}억원`,
+      }));
+
+      // 투자자 데이터: 더미 데이터로 설정
+      const investors = [
+        { date: "오늘", individual: "-", foreign: "-", institution: "0" },
+      ];
+
+      setCandleChartOptions(candleOptions);
+      setBarChartOptions(barOptions);
+      setDailys(daily);
+      setInvestorData(investors);
     };
 
-    const barOptions = {
-      series: [
-        {
-          name: "거래량",
-          data: [10074683, 2043396, 542817, 42239, 34138, 37000, 80000],
-        },
-      ],
-      options: {
-        chart: { type: "bar", height: 350 },
-        xaxis: {
-          categories: [
-            "12월 11일",
-            "12월 12일",
-            "12월 13일",
-            "12월 14일",
-            "12월 15일",
-            "12월 18일",
-            "12월 19일",
-          ],
-        },
-        tooltip: { enabled: true },
-      },
-    };
-
-    const daily = [
-      {
-        date: "12월 19일",
-        price: "6,660원",
-        rate: "+0.15%",
-        volume: "1,280,117주",
-        amount: "85억원",
-      },
-      {
-        date: "12월 18일",
-        price: "6,650원",
-        rate: "+16.66%",
-        volume: "10,074,683주",
-        amount: "716억원",
-      },
-      {
-        date: "12월 17일",
-        price: "5,700원",
-        rate: "+14.11%",
-        volume: "2,542,817주",
-        amount: "142억원",
-      },
-      {
-        date: "12월 16일",
-        price: "4,995원",
-        rate: "+2.04%",
-        volume: "42,239주",
-        amount: "2억원",
-      },
-      {
-        date: "12월 15일",
-        price: "4,895원",
-        rate: "+1.87%",
-        volume: "34,138주",
-        amount: "1.7억원",
-      },
-    ];
-
-    const investors = [
-      { date: "오늘", individual: "-", foreign: "-11,720", institution: "0" },
-      {
-        date: "12월 18일",
-        individual: "+4,756",
-        foreign: "-4,881",
-        institution: "+159",
-      },
-      {
-        date: "12월 17일",
-        individual: "+131,663",
-        foreign: "-131,317",
-        institution: "+182",
-      },
-      {
-        date: "12월 16일",
-        individual: "+8,260",
-        foreign: "-8,846",
-        institution: "+62",
-      },
-    ];
-
-    setCandleChartOptions(candleOptions);
-    setBarChartOptions(barOptions);
-    setDailyData(daily);
-    setInvestorData(investors);
-  }, []);
+    generateChartOptions();
+  }, [dailyData]);
 
   useEffect(() => {
     setTimeout(() => {
@@ -154,7 +153,7 @@ const StockChartDetailPage = ({ toggleSidebar, isSidebarVisible }) => {
           {/* 캔들스틱 차트 */}
           {candleChartOptions.series?.[0]?.data?.length > 0 && (
             <div className="chart-wrapper">
-              <h3>캔들스틱 차트</h3>
+              <h3>시가,고가,저가,종가</h3>
               <ReactApexChart
                 options={candleChartOptions.options}
                 series={candleChartOptions.series}
@@ -167,7 +166,7 @@ const StockChartDetailPage = ({ toggleSidebar, isSidebarVisible }) => {
           {/* 바 차트 */}
           {barChartOptions.series?.[0]?.data?.length > 0 && (
             <div className="chart-wrapper">
-              <h3>바 차트</h3>
+              <h3>전일대비등락</h3>
               <ReactApexChart
                 options={barChartOptions.options}
                 series={barChartOptions.series}
@@ -191,11 +190,10 @@ const StockChartDetailPage = ({ toggleSidebar, isSidebarVisible }) => {
                   <th>종가</th>
                   <th>등락률</th>
                   <th>거래량</th>
-                  <th>거래대금</th>
                 </tr>
               </thead>
               <tbody>
-                {dailyData.map((row, index) => (
+                {dailys.map((row, index) => (
                   <tr key={index}>
                     <td>{row.date}</td>
                     <td>{row.price}</td>
@@ -204,7 +202,6 @@ const StockChartDetailPage = ({ toggleSidebar, isSidebarVisible }) => {
                     >
                       {row.rate}
                     </td>
-                    <td>{row.volume}</td>
                     <td>{row.amount}</td>
                   </tr>
                 ))}
@@ -213,123 +210,100 @@ const StockChartDetailPage = ({ toggleSidebar, isSidebarVisible }) => {
           </div>
 
           <div className="table-wrapper">
-            <h3>투자자 매매 동향</h3>
-            <table className="data-table">
-              <thead>
-                <tr>
-                  <th>일자</th>
-                  <th>개인</th>
-                  <th>외국인</th>
-                  <th>기관</th>
-                </tr>
-              </thead>
-              <tbody>
-                {investorData.map((row, index) => (
-                  <tr key={index}>
-                    <td>{row.date}</td>
-                    <td>{row.individual}</td>
-                    <td
-                      style={{
-                        color: row.foreign.includes("-") ? "blue" : "red",
-                      }}
-                    >
-                      {row.foreign}
-                    </td>
-                    <td>{row.institution}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <div className="order-form">
+              <h3>주문하기</h3>
+              {/* 주문 유형 */}
+              <div className="form-group">
+                <label htmlFor="order-type">주문 유형</label>
+                <select
+                  id="order-type"
+                  value={orderType}
+                  onChange={(e) => setOrderType(e.target.value)}
+                >
+                  <option value="구매">구매</option>
+                  <option value="판매">판매</option>
+                </select>
+              </div>
+
+              {/* 구매 가격 */}
+              <div className="form-group">
+                <label>구매 가격</label>
+                <div className="price-type">
+                  <button
+                    className={`price-button ${
+                      priceType === "지정가" ? "active" : ""
+                    }`}
+                    onClick={() => setPriceType("지정가")}
+                  >
+                    지정가
+                  </button>
+                </div>
+                <div className="price-input">
+                  <input
+                    type="text"
+                    value={`${price.toLocaleString()} 원`}
+                    readOnly
+                  />
+                  <button onClick={() => setPrice((prev) => prev - 100)}>
+                    −
+                  </button>
+                  <button onClick={() => setPrice((prev) => prev + 100)}>
+                    +
+                  </button>
+                </div>
+              </div>
+
+              {/* 수량 */}
+              <div className="form-group">
+                <label>수량</label>
+                <div className="quantity-input">
+                  <input
+                    type="text"
+                    placeholder="수량 입력"
+                    value={quantity}
+                    onChange={(e) => setQuantity(Number(e.target.value))}
+                  />
+                  <button onClick={() => handleQuantityChange("decrement")}>
+                    −
+                  </button>
+                  <button onClick={() => handleQuantityChange("increment")}>
+                    +
+                  </button>
+                </div>
+                <div className="quantity-buttons">
+                  <button onClick={() => handleNumberChange(10)}>
+                    +10
+                  </button>
+                  <button onClick={() => handleNumberChange(25)}>
+                    +25
+                  </button>
+                  <button onClick={() => handleNumberChange(50)}>
+                    +50
+                  </button>
+                </div>
+              </div>
+
+              <hr />
+
+              {/* 금액 */}
+              <div className="form-summary">
+                <div className="summary-row">
+                  <span>구매가능 금액</span>
+                  <span>0원</span>
+                </div>
+                <div className="summary-row">
+                  <span>총 주문 금액</span>
+                  <span>{(quantity * price).toLocaleString()}원</span>
+                </div>
+              </div>
+
+              {/* 버튼 */}
+              <button className="order-button" disabled>
+                로그인하고 구매하기
+              </button>
+            </div>
           </div>
         </div>
-      </div>
-
-      <div className="order-form">
-        <h3>주문하기</h3>
-        {/* 주문 유형 */}
-        <div className="form-group">
-          <label htmlFor="order-type">주문 유형</label>
-          <select
-            id="order-type"
-            value={orderType}
-            onChange={(e) => setOrderType(e.target.value)}
-          >
-            <option value="일반 주문">일반 주문</option>
-            <option value="시장가 주문">시장가 주문</option>
-          </select>
-        </div>
-
-        {/* 구매 가격 */}
-        <div className="form-group">
-          <label>구매 가격</label>
-          <div className="price-type">
-            <button
-              className={`price-button ${
-                priceType === "지정가" ? "active" : ""
-              }`}
-              onClick={() => setPriceType("지정가")}
-            >
-              지정가
-            </button>
-            <button
-              className={`price-button ${
-                priceType === "시장가" ? "active" : ""
-              }`}
-              onClick={() => setPriceType("시장가")}
-            >
-              시장가
-            </button>
-          </div>
-          <div className="price-input">
-            <input
-              type="text"
-              value={`${price.toLocaleString()} 원`}
-              readOnly
-            />
-            <button onClick={() => setPrice((prev) => prev - 100)}>−</button>
-            <button onClick={() => setPrice((prev) => prev + 100)}>+</button>
-          </div>
-        </div>
-
-        {/* 수량 */}
-        <div className="form-group">
-          <label>수량</label>
-          <div className="quantity-input">
-            <input
-              type="text"
-              placeholder="수량 입력"
-              value={quantity}
-              onChange={(e) => setQuantity(Number(e.target.value))}
-            />
-            <button onClick={() => handleQuantityChange("decrement")}>−</button>
-            <button onClick={() => handleQuantityChange("increment")}>+</button>
-          </div>
-          <div className="quantity-buttons">
-            <button onClick={() => handlePercentageChange(10)}>10%</button>
-            <button onClick={() => handlePercentageChange(25)}>25%</button>
-            <button onClick={() => handlePercentageChange(50)}>50%</button>
-            <button onClick={() => handlePercentageChange(100)}>최대</button>
-          </div>
-        </div>
-
-        <hr />
-
-        {/* 금액 */}
-        <div className="form-summary">
-          <div className="summary-row">
-            <span>구매가능 금액</span>
-            <span>0원</span>
-          </div>
-          <div className="summary-row">
-            <span>총 주문 금액</span>
-            <span>{(quantity * price).toLocaleString()}원</span>
-          </div>
-        </div>
-
-        {/* 버튼 */}
-        <button className="order-button" disabled>
-          로그인하고 구매하기
-        </button>
       </div>
     </div>
   );

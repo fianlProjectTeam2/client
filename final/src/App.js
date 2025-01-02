@@ -13,6 +13,7 @@ const StockChartDetailPage = lazy(() => import("./pages/StockChartDetailPage"));
 function App() {
   const [isSidebarVisible, setIsSidebarVisible] = useState(false);
   const [currentPage, setCurrentPage] = useState("loading");
+  const [selectedStock, setSelectedStock] = useState(null);
 
   const toggleSidebar = () => {
     setIsSidebarVisible(!isSidebarVisible);
@@ -26,12 +27,14 @@ function App() {
         return (
           <StockListPage
             setCurrentPage={setCurrentPage}
+            setSelectedStock={setSelectedStock}
             onLogout={() => setCurrentPage("login")}
           />
         );
       case "StockChartDetail":
         return (
           <StockChartDetailPage
+            stock={selectedStock}
             toggleSidebar={toggleSidebar}
             isSidebarVisible={isSidebarVisible}
             onLogout={() => setCurrentPage("login")}
