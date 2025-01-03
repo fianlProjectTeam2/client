@@ -8,7 +8,7 @@ const StockListPage = ({ setCurrentPage, setSelectedStock }) => {
 
   const fetchData = async () => {
     try {
-      const response = await ChartAPI.fetchChartData();
+      const response = await ChartAPI.fetchStockData();
       console.log(response.data);
       const responses = response?.data || [];
       const items = responses.flatMap((res) => res?.response?.body?.items?.item || []);
