@@ -9,6 +9,7 @@ import Footer from "./components/Footer";
 const HomePage = lazy(() => import("./pages/HomePage"));
 const StockListPage = lazy(() => import("./pages/StockListPage"));
 const StockChartDetailPage = lazy(() => import("./pages/StockChartDetailPage"));
+const News = lazy(() => import("./pages/News"));
 
 function App() {
   const [isSidebarVisible, setIsSidebarVisible] = useState(false);
@@ -40,6 +41,8 @@ function App() {
             onLogout={() => setCurrentPage("login")}
           />
         );
+      case "news":
+        return <News />;
       default:
         return <HomePage onLogout={() => setCurrentPage("login")} />;
     }
