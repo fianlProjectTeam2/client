@@ -16,7 +16,27 @@ const SideBar = ({ isVisible, toggleSidebar }) => {
   };
 
   const handleLoginClick = () => {
-    window.open("http://localhost:8080/login", "LoginWindow", "width=600,height=300");
+    const loginWindow = window.open(
+      "http://localhost:8080/login/react",
+      "LoginWindow",
+      "width=600,height=300"
+    );
+  
+    const timer = setInterval(() => {
+      if (loginWindow.closed) {
+        clearInterval(timer);
+        fetchSession();
+      }
+    }, 500);
+  };
+
+  const handleLogout = async () => {
+    try {
+      const response = await AuthAPI.logout();
+      window.location.reload();
+    } catch (error) {
+      console.error("Error", error);
+    }
   };
 
   useEffect(() => {
@@ -26,9 +46,14 @@ const SideBar = ({ isVisible, toggleSidebar }) => {
   return (
     <>
       {session ? (
-        <button className="toggle-btn" onClick={toggleSidebar}>
-          {isVisible ? "X" : "마이페이지 열기"}
-        </button>
+        <>
+          <button className="toggle-btn" onClick={toggleSidebar}>
+            {isVisible ? "X" : "MY"}
+          </button>
+          <button className="toggle-btn-2" onClick={handleLogout}>
+            로그아웃
+          </button>
+        </>
       ) : (
         <button className="toggle-btn" onClick={handleLoginClick}>
           로그인
