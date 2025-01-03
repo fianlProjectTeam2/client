@@ -9,6 +9,13 @@ const ChartAPI = {
       withCredentials: true,
     });
   },
+  
+  fetchStockData: (numOfRows = 1, item) => {
+    return axios.get(`${API_URL}/api/stock-db`, {
+      params: { numOfRows, item },
+      withCredentials: true,
+    });
+  },
 };
 
 export default ChartAPI;

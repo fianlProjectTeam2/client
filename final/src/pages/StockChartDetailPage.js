@@ -304,11 +304,11 @@ const StockChartDetailPage = ({ stock, toggleSidebar, isSidebarVisible }) => {
               </div>
 
               {session ? (
-                <button className="order-button">
+                <button className="order-button-s">
                   구매하기
                 </button>
               ) : (
-                <button className="order-button" disabled>
+                <button className="order-button-f" disabled>
                   로그인하고 구매하기
                 </button>
               )}
