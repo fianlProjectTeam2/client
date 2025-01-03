@@ -7,9 +7,13 @@ const Header = ({ setCurrentPage }) => {
       <div className="logo">StocKids</div>
       <nav>
         <ul>
-          <li><a onClick={() => setCurrentPage("home")}>홈</a></li>
-          <li>뉴스</li>
-          <li><a onClick={() => setCurrentPage("stock")}>주식 골라보기</a></li>
+          <li>
+            <a onClick={() => setCurrentPage("home")}>홈</a>
+          </li>
+          <li><a onClick={() => {setCurrentPage("news")}}>뉴스</a></li>
+          <li>
+            <a onClick={() => setCurrentPage("stock")}>주식 골라보기</a>
+          </li>
           <li>게시판</li>
         </ul>
       </nav>
