@@ -5,10 +5,10 @@ import ChartAPI from "../api/ChartAPI";
 const StockListPage = ({ setCurrentPage, setSelectedStock }) => {
   const [chartData, setChartData] = useState([]);
   const [error, setError] = useState(null);
-  const [isLoading, setIsLoading] = useState(true); // 로딩 상태 추가
+  const [isLoading, setIsLoading] = useState(true);
 
   const fetchData = async () => {
-    setIsLoading(true); // 데이터 로드 시작
+    setIsLoading(true);
     try {
       const response = await ChartAPI.fetchStockData();
       console.log(response.data);
@@ -39,7 +39,7 @@ const StockListPage = ({ setCurrentPage, setSelectedStock }) => {
       console.error("Error fetching data:", error);
       setError(error.message);
     } finally {
-      setIsLoading(false); // 데이터 로드 완료
+      setIsLoading(false);
     }
   };
 
