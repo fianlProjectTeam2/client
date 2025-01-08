@@ -3,11 +3,10 @@ import "../static/resources/css/SideBar.css";
 import AuthAPI from "../api/AuthAPI";
 import PointAPI from "../api/PointAPI";
 
-const SideBar = ({ isVisible, toggleSidebar }) => {
+const SideBar = ({ isVisible, toggleSidebar, userPoint, setUserPoint }) => {
   const [session, setSession] = useState();
   const [pointModal, setPointModal] = useState(false);
   const [chargeAmount, setChargeAmount] = useState("");
-  const [userPoint, setUserPoint] = useState();
 
   const handlePoint = () => {
     setPointModal(true);
@@ -80,6 +79,10 @@ const SideBar = ({ isVisible, toggleSidebar }) => {
   useEffect(() => {
     fetchPointData();
   }, [session]);
+
+  useEffect(() => {
+    fetchPointData();
+  }, [userPoint]);
 
   return (
     <>

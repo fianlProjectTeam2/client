@@ -3,8 +3,10 @@ import ReactApexChart from "react-apexcharts";
 import "../static/resources/css/StockChartDetailPage.css";
 import ChartAPI from "../api/ChartAPI";
 import AuthAPI from "../api/AuthAPI";
+import PointAPI from "../api/PointAPI";
+import PurchaseAPI from "../api/PurchaseAPI";
 
-const StockChartDetailPage = ({ stock, toggleSidebar, isSidebarVisible }) => {
+const StockChartDetailPage = ({ stock, toggleSidebar, isSidebarVisible, userPoint, setUserPoint }) => {
   const [candleChartOptions, setCandleChartOptions] = useState(null);
   const [barChartOptions, setBarChartOptions] = useState(null);
   const [dailyData, setDailyData] = useState([]);
@@ -19,11 +21,23 @@ const StockChartDetailPage = ({ stock, toggleSidebar, isSidebarVisible }) => {
   const [stockName, setStockName] = useState();
   const [session, setSession] = useState();
 
+  const [purchaseModal, setPurchaseModal] = useState(false);
+
   const fetchSession = async () => {
     try {
       const response = await AuthAPI.sessionCheck();
       setSession(response.data);
       console.log(response);
+    } catch (error) {
+      console.error("Error", error);
+    }
+  };
+
+  const fetchPointData = async () => {
+    fetchSession();
+    try {
+      const response = await PointAPI.fetchPointData();
+      setUserPoint(response.data);
     } catch (error) {
       console.error("Error", error);
     }
@@ -64,6 +78,24 @@ const StockChartDetailPage = ({ stock, toggleSidebar, isSidebarVisible }) => {
     }
   };
 
+  const purchaseStock = async (isinCd, totalPrice) => {
+    try {
+      const response = await PurchaseAPI.purchaseStock({
+        stockCode: isinCd,
+        virtualDealPrice: totalPrice,
+        virtualDealVolume: quantity,
+      });
+
+      setUserPoint((prevPoint) => prevPoint - totalPrice); 
+      await fetchPointData();
+      alert("구매가 완료되었습니다.");
+    } catch (error) {
+      console.error("구매 실패:", error);
+      alert("구매 중 오류가 발생했습니다.");
+    }
+  };
+  
+
   useEffect(() => {
     if (stock?.itmsNm) {
       fetchData();
@@ -72,6 +104,7 @@ const StockChartDetailPage = ({ stock, toggleSidebar, isSidebarVisible }) => {
 
   useEffect(() => {
     fetchSession();
+    fetchPointData();
   }, []);
 
   const handleQuantityChange = (type) => {
@@ -135,7 +168,6 @@ const StockChartDetailPage = ({ stock, toggleSidebar, isSidebarVisible }) => {
         amount: `${(item.trPrc / 1e8).toFixed(2)}억원`,
       }));
 
-      // 투자자 데이터: 더미 데이터로 설정
       const investors = [
         { date: "오늘", individual: "-", foreign: "-", institution: "0" },
       ];
@@ -147,6 +179,11 @@ const StockChartDetailPage = ({ stock, toggleSidebar, isSidebarVisible }) => {
     };
 
     generateChartOptions();
+
+    if (dailyData.length > 0) {
+      const latestMkp = dailyData[dailyData.length - 1].mkp;
+      setPrice(latestMkp);
+    }
   }, [dailyData]);
 
   useEffect(() => {
@@ -160,162 +197,213 @@ const StockChartDetailPage = ({ stock, toggleSidebar, isSidebarVisible }) => {
   }
 
   return (
-    <div className="dashboard-container-wrapper">
-      <div className="dashboard-container">
-        <div className="charts-container">
-          {/* 캔들스틱 차트 */}
-          {candleChartOptions.series?.[0]?.data?.length > 0 && (
-            <div className="chart-wrapper">
-              <h3>시가,고가,저가,종가</h3>
-              <ReactApexChart
-                options={candleChartOptions.options}
-                series={candleChartOptions.series}
-                type="candlestick"
-                height={350}
-              />
-            </div>
-          )}
+    <div>
+      <div className="dashboard-container-wrapper">
+        <div className="dashboard-container">
+          <div className="charts-container">
+            {/* 캔들스틱 차트 */}
+            {candleChartOptions.series?.[0]?.data?.length > 0 && (
+              <div className="chart-wrapper">
+                <h3>시가,고가,저가,종가</h3>
+                <ReactApexChart
+                  options={candleChartOptions.options}
+                  series={candleChartOptions.series}
+                  type="candlestick"
+                  height={350}
+                />
+              </div>
+            )}
 
-          {/* 바 차트 */}
-          {barChartOptions.series?.[0]?.data?.length > 0 && (
-            <div className="chart-wrapper">
-              <h3>전일대비등락</h3>
-              <ReactApexChart
-                options={barChartOptions.options}
-                series={barChartOptions.series}
-                type="bar"
-                height={350}
-              />
-            </div>
-          )}
-        </div>
-
-        {/* 테이블 섹션 */}
-        <div
-          className={`table-section ${isSidebarVisible ? "sidebar-open" : ""}`}
-        >
-          <div className="table-wrapper">
-            <h3>일별 시세</h3>
-            <table className="data-table">
-              <thead>
-                <tr>
-                  <th>일자</th>
-                  <th>종가</th>
-                  <th>등락률</th>
-                  <th>거래량</th>
-                </tr>
-              </thead>
-              <tbody>
-                {dailys.map((row, index) => (
-                  <tr key={index}>
-                    <td>{row.date}</td>
-                    <td>{row.price}</td>
-                    <td
-                      style={{ color: row.rate.includes("+") ? "red" : "blue" }}
-                    >
-                      {row.rate}
-                    </td>
-                    <td>{row.amount}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            {/* 바 차트 */}
+            {barChartOptions.series?.[0]?.data?.length > 0 && (
+              <div className="chart-wrapper">
+                <h3>전일대비등락</h3>
+                <ReactApexChart
+                  options={barChartOptions.options}
+                  series={barChartOptions.series}
+                  type="bar"
+                  height={350}
+                />
+              </div>
+            )}
           </div>
 
-          <div className="table-wrapper">
-            <div className="order-form">
-              <h3>주문하기</h3>
-              {/* 주문 유형 */}
-              <div className="form-group">
-                <label htmlFor="order-type">주문 유형</label>
-                <select
-                  id="order-type"
-                  value={orderType}
-                  onChange={(e) => setOrderType(e.target.value)}
-                >
-                  <option value="구매">구매</option>
-                  <option value="판매">판매</option>
-                </select>
-              </div>
+          {/* 테이블 섹션 */}
+          <div
+            className={`table-section ${
+              isSidebarVisible ? "sidebar-open" : ""
+            }`}
+          >
+            <div className="table-wrapper">
+              <h3>일별 시세</h3>
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th>일자</th>
+                    <th>종가</th>
+                    <th>등락률</th>
+                    <th>거래량</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {dailys.map((row, index) => (
+                    <tr key={index}>
+                      <td>{row.date}</td>
+                      <td>{row.price}</td>
+                      <td
+                        style={{
+                          color: row.rate.includes("+") ? "red" : "blue",
+                        }}
+                      >
+                        {row.rate}
+                      </td>
+                      <td>{row.amount}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
 
-              {/* 구매 가격 */}
-              <div className="form-group">
-                <label>구매 가격</label>
-                <div className="price-type">
-                  <button
-                    className={`price-button ${
-                      priceType === "지정가" ? "active" : ""
-                    }`}
-                    onClick={() => setPriceType("지정가")}
+            <div className="table-wrapper">
+              <div className="order-form">
+                <h3>주문하기</h3>
+                {/* 주문 유형 */}
+                <div className="form-group">
+                  <label htmlFor="order-type">주문 유형</label>
+                  <select
+                    id="order-type"
+                    value={orderType}
+                    onChange={(e) => setOrderType(e.target.value)}
                   >
-                    지정가
-                  </button>
+                    <option value="구매">구매</option>
+                    <option value="판매">판매</option>
+                  </select>
                 </div>
-                <div className="price-input">
-                  <input
-                    type="text"
-                    value={`${price.toLocaleString()} 원`}
-                    readOnly
-                  />
-                  <button onClick={() => setPrice((prev) => prev - 100)}>
+
+                {/* 구매 가격 */}
+                <div className="form-group">
+                  <label>구매 가격</label>
+                  <div className="price-type">
+                    <button
+                      className={`price-button ${
+                        priceType === "지정가" ? "active" : ""
+                      }`}
+                      onClick={() => setPriceType("지정가")}
+                    >
+                      지정가
+                    </button>
+                  </div>
+                  <div className="price-input">
+                    <input
+                      type="text"
+                      value={`${price.toLocaleString()} 원`}
+                      readOnly
+                    />
+                    {/* <button onClick={() => setPrice((prev) => prev - 100)}>
                     −
                   </button>
                   <button onClick={() => setPrice((prev) => prev + 100)}>
                     +
+                  </button> */}
+                  </div>
+                </div>
+
+                {/* 수량 */}
+                <div className="form-group">
+                  <label>수량</label>
+                  <div className="quantity-input">
+                    <input
+                      type="text"
+                      placeholder="수량 입력"
+                      value={quantity}
+                      onChange={(e) => setQuantity(Number(e.target.value))}
+                    />
+                    <button onClick={() => handleQuantityChange("decrement")}>
+                      −
+                    </button>
+                    <button onClick={() => handleQuantityChange("increment")}>
+                      +
+                    </button>
+                  </div>
+                  <div className="quantity-buttons">
+                    <button onClick={() => handleNumberChange(10)}>+10</button>
+                    <button onClick={() => handleNumberChange(25)}>+25</button>
+                    <button onClick={() => handleNumberChange(50)}>+50</button>
+                  </div>
+                </div>
+
+                <hr />
+
+                <div className="form-summary">
+                  <div className="summary-row">
+                    <span>구매가능 금액</span>
+                    <span>{userPoint.toLocaleString()}원</span>
+                  </div>
+                  <div className="summary-row">
+                    <span>총 주문 금액</span>
+                    <span>{(quantity * price).toLocaleString()}원</span>
+                  </div>
+                </div>
+
+                {session ? (
+                  quantity >= 1 ? (
+                    userPoint >= quantity * price ? (
+                      <button
+                        className="order-button-s"
+                        onClick={() => setPurchaseModal(true)}
+                      >
+                        구매하기
+                      </button>
+                    ) : (
+                      <button className="order-button-f" disabled>
+                        소지한 포인트가 적습니다.
+                      </button>
+                    )
+                  ) : (
+                    <button className="order-button-f" disabled>
+                      수량 1개 이상부터 구매가 가능합니다.
+                    </button>
+                  )
+                ) : (
+                  <button className="order-button-f" disabled>
+                    로그인하고 구매하기
                   </button>
-                </div>
+                )}
               </div>
-
-              {/* 수량 */}
-              <div className="form-group">
-                <label>수량</label>
-                <div className="quantity-input">
-                  <input
-                    type="text"
-                    placeholder="수량 입력"
-                    value={quantity}
-                    onChange={(e) => setQuantity(Number(e.target.value))}
-                  />
-                  <button onClick={() => handleQuantityChange("decrement")}>
-                    −
-                  </button>
-                  <button onClick={() => handleQuantityChange("increment")}>
-                    +
-                  </button>
-                </div>
-                <div className="quantity-buttons">
-                  <button onClick={() => handleNumberChange(10)}>+10</button>
-                  <button onClick={() => handleNumberChange(25)}>+25</button>
-                  <button onClick={() => handleNumberChange(50)}>+50</button>
-                </div>
-              </div>
-
-              <hr />
-
-              <div className="form-summary">
-                <div className="summary-row">
-                  <span>구매가능 금액</span>
-                  <span>0원</span>
-                </div>
-                <div className="summary-row">
-                  <span>총 주문 금액</span>
-                  <span>{(quantity * price).toLocaleString()}원</span>
-                </div>
-              </div>
-
-              {session ? (
-                <button className="order-button-s">
-                  구매하기
-                </button>
-              ) : (
-                <button className="order-button-f" disabled>
-                  로그인하고 구매하기
-                </button>
-              )}
             </div>
           </div>
         </div>
       </div>
+      {purchaseModal && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h3>구매 확인</h3>
+            <p>구매할 주식: {stock?.itmsNm}</p>
+            <p>구매 가격: {price.toLocaleString()} 원</p>
+            <p>구매 수량: {quantity} 주</p>
+            <p>총 주문 금액: {(quantity * price).toLocaleString()} 원</p>
+            <p>보유중인 포인트: {userPoint.toLocaleString()} 원</p>
+
+            <div className="modal-buttons">
+              <button
+                className="confirm-button"
+                onClick={() => {
+                  purchaseStock(stock.isinCd, quantity*price);
+                  setPurchaseModal(false);
+                }}
+              >
+                구매 확정
+              </button>
+              <button
+                className="cancel-button"
+                onClick={() => setPurchaseModal(false)}
+              >
+                취소
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

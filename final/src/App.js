@@ -15,6 +15,7 @@ function App() {
   const [isSidebarVisible, setIsSidebarVisible] = useState(false);
   const [currentPage, setCurrentPage] = useState("loading");
   const [selectedStock, setSelectedStock] = useState(null);
+  const [userPoint, setUserPoint] = useState(0);
 
   const toggleSidebar = () => {
     setIsSidebarVisible(!isSidebarVisible);
@@ -39,6 +40,8 @@ function App() {
             toggleSidebar={toggleSidebar}
             isSidebarVisible={isSidebarVisible}
             onLogout={() => setCurrentPage("login")}
+            userPoint={userPoint}
+            setUserPoint={setUserPoint}
           />
         );
       case "news":
@@ -58,7 +61,7 @@ function App() {
           </Suspense>
         </main>
 
-        <SideBar isVisible={isSidebarVisible} toggleSidebar={toggleSidebar} />
+        <SideBar isVisible={isSidebarVisible} toggleSidebar={toggleSidebar} userPoint={userPoint} setUserPoint={setUserPoint} />
       </div>
       <Footer />
     </BrowserRouter>
