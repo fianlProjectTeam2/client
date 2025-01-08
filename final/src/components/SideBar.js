@@ -2,14 +2,35 @@ import React, { useState, useEffect } from "react";
 import "../static/resources/css/SideBar.css";
 import AuthAPI from "../api/AuthAPI";
 import PointAPI from "../api/PointAPI";
+import StockAPI from "../api/StockAPI";
 
 const SideBar = ({ isVisible, toggleSidebar, userPoint, setUserPoint }) => {
   const [session, setSession] = useState();
   const [pointModal, setPointModal] = useState(false);
   const [chargeAmount, setChargeAmount] = useState("");
+  const [myStock, setMyStock] = useState([]);
+  const [myFinances, setMyFinances] = useState(0);
 
   const handlePoint = () => {
     setPointModal(true);
+  };
+
+  const fetchMyStock = async () => {
+    try {
+      const response = await StockAPI.fetchMyStock();
+      setMyStock(response.data);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const fetchMyFinances = async () => {
+    try {
+      const response = await StockAPI.fetchMyFinances();
+      setMyFinances(response.data);
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   const fetchPointData = async () => {
@@ -24,7 +45,7 @@ const SideBar = ({ isVisible, toggleSidebar, userPoint, setUserPoint }) => {
 
   const handleChargePoints = async () => {
     fetchSession();
-    if(chargeAmount) {
+    if (chargeAmount) {
       try {
         const response = await PointAPI.ChargePointData(chargeAmount);
         alert(`포인트 ${chargeAmount}P가 충전되었습니다!`);
@@ -34,7 +55,7 @@ const SideBar = ({ isVisible, toggleSidebar, userPoint, setUserPoint }) => {
       } catch (error) {
         console.error("Error", error);
       }
-    } else{
+    } else {
       alert("충전 금액을 입력해주세요!");
     }
   };
@@ -74,6 +95,8 @@ const SideBar = ({ isVisible, toggleSidebar, userPoint, setUserPoint }) => {
 
   useEffect(() => {
     fetchSession();
+    fetchMyStock();
+    fetchMyFinances();
   }, []);
 
   useEffect(() => {
@@ -82,6 +105,8 @@ const SideBar = ({ isVisible, toggleSidebar, userPoint, setUserPoint }) => {
 
   useEffect(() => {
     fetchPointData();
+    fetchMyStock();
+    fetchMyFinances();
   }, [userPoint]);
 
   return (
@@ -105,7 +130,7 @@ const SideBar = ({ isVisible, toggleSidebar, userPoint, setUserPoint }) => {
           <div className="wallet-card">
             <h2 className="wallet-title">내 지갑</h2>
             <p className="wallet-points">
-              보유중인 포인트: <span>{userPoint}</span> P
+              보유중인 포인트: <span>{userPoint.toLocaleString()}</span> 원
             </p>
             {pointModal ? (
               <div className="charge-container">
@@ -136,10 +161,14 @@ const SideBar = ({ isVisible, toggleSidebar, userPoint, setUserPoint }) => {
           </div>
           <div className="stocks-card">
             <h2 className="stocks-title">소유중인 주식</h2>
+            <h3 className="stocks-title">보유 재산 : {myFinances.toLocaleString()} 원</h3>
             <ul className="stocks-list">
-              <li>삼성전자 - 50주</li>
-              <li>SK하이닉스 - 30주</li>
-              <li>LG에너지솔루션 - 10주</li>
+              {myStock.map((data, index) => (
+                <li key={index}>
+                  {data.stockDTO.stockName} - 보유 주식 수:{" "}
+                  {data.cumulativeStockDTO.countStock}
+                </li>
+              ))}
             </ul>
           </div>
         </div>
