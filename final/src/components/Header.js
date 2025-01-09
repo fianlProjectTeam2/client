@@ -14,6 +14,9 @@ const Header = ({ setCurrentPage }) => {
           <li>
             <a onClick={() => setCurrentPage("stock")}>주식 골라보기</a>
           </li>
+          <li>
+            <a onClick={() => setCurrentPage("rank")}>랭킹</a>
+          </li>
           <li>게시판</li>
         </ul>
       </nav>

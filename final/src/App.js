@@ -6,6 +6,7 @@ import Header from "./components/Header";
 import SideBar from "./components/SideBar";
 import Footer from "./components/Footer";
 import Reload from "./components/Reload";
+import Rank from "./pages/Rank";
 
 const HomePage = lazy(() => import("./pages/HomePage"));
 const StockListPage = lazy(() => import("./pages/StockListPage"));
@@ -52,6 +53,8 @@ function App() {
         return <News />;
       case "reload":
         return <Reload setCurrentPage={setCurrentPage} selectedStock={selectedStock} />
+      case "rank":
+        return <Rank />
       default:
         return <HomePage onLogout={() => setCurrentPage("login")} />;
     }
