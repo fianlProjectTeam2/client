@@ -5,6 +5,7 @@ import { BrowserRouter } from "react-router-dom";
 import Header from "./components/Header";
 import SideBar from "./components/SideBar";
 import Footer from "./components/Footer";
+import Reload from "./components/Reload";
 
 const HomePage = lazy(() => import("./pages/HomePage"));
 const StockListPage = lazy(() => import("./pages/StockListPage"));
@@ -16,6 +17,8 @@ function App() {
   const [currentPage, setCurrentPage] = useState("loading");
   const [selectedStock, setSelectedStock] = useState(null);
   const [userPoint, setUserPoint] = useState(0);
+  const [myStock, setMyStock] = useState([]);
+  
 
   const toggleSidebar = () => {
     setIsSidebarVisible(!isSidebarVisible);
@@ -42,10 +45,13 @@ function App() {
             onLogout={() => setCurrentPage("login")}
             userPoint={userPoint}
             setUserPoint={setUserPoint}
+            myStock={myStock}
           />
         );
       case "news":
         return <News />;
+      case "reload":
+        return <Reload setCurrentPage={setCurrentPage} selectedStock={selectedStock} />
       default:
         return <HomePage onLogout={() => setCurrentPage("login")} />;
     }
@@ -61,7 +67,7 @@ function App() {
           </Suspense>
         </main>
 
-        <SideBar isVisible={isSidebarVisible} toggleSidebar={toggleSidebar} userPoint={userPoint} setUserPoint={setUserPoint} />
+        <SideBar isVisible={isSidebarVisible} toggleSidebar={toggleSidebar} userPoint={userPoint} setUserPoint={setUserPoint} setSelectedStock={setSelectedStock} setCurrentPage={setCurrentPage} myStock={myStock} setMyStock={setMyStock}/>
       </div>
       <Footer />
     </BrowserRouter>

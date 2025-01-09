@@ -5,23 +5,65 @@ import ChartAPI from "../api/ChartAPI";
 import AuthAPI from "../api/AuthAPI";
 import PointAPI from "../api/PointAPI";
 import PurchaseAPI from "../api/PurchaseAPI";
+import StockAPI from "../api/StockAPI";
 
-const StockChartDetailPage = ({ stock, toggleSidebar, isSidebarVisible, userPoint, setUserPoint }) => {
+const StockChartDetailPage = ({
+  stock,
+  toggleSidebar,
+  isSidebarVisible,
+  userPoint,
+  setUserPoint,
+  myStock,
+}) => {
   const [candleChartOptions, setCandleChartOptions] = useState(null);
   const [barChartOptions, setBarChartOptions] = useState(null);
   const [dailyData, setDailyData] = useState([]);
   const [dailys, setDailys] = useState([]);
   const [investorData, setInvestorData] = useState([]);
 
-  const [orderType, setOrderType] = useState("일반 주문");
+  const [orderType, setOrderType] = useState("구매");
   const [priceType, setPriceType] = useState("지정가");
   const [price, setPrice] = useState(53900);
   const [quantity, setQuantity] = useState(0);
-  const [totalAmount, setTotalAmount] = useState(0);
-  const [stockName, setStockName] = useState();
   const [session, setSession] = useState();
 
   const [purchaseModal, setPurchaseModal] = useState(false);
+  const [sellModal, setSellModal] = useState(false);
+
+  const [purchaseInfo, setPurchaseInfo] = useState();
+
+  const handleSell = async () => {
+    sellStock();
+  };
+
+  const sellStock = async () => {
+    try {
+      const payload = {
+        stockCode: stock.isinCd,
+        virtualDealPrice: price,
+        virtualDealVolume: quantity,
+        profit: (price - purchaseInfo.avgStock) * quantity
+      };
+      
+      const response = await StockAPI.sellStock(payload);
+      alert("판매가 완료되었습니다.");
+      await fetchPointData();
+      await fetchPurchaseInfo(stock.isinCd);
+    } catch (error) {
+      console.error("판매 실패:", error);
+      alert("판매 중 오류가 발생했습니다.");
+    }
+  };
+
+  const fetchPurchaseInfo = async (data) => {
+    try {
+      const response = await StockAPI.fetchPurchaseInfo(data);
+      setPurchaseInfo(response.data);
+      console.log(response.data);
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   const fetchSession = async () => {
     try {
@@ -86,15 +128,15 @@ const StockChartDetailPage = ({ stock, toggleSidebar, isSidebarVisible, userPoin
         virtualDealVolume: quantity,
       });
 
-      setUserPoint((prevPoint) => prevPoint - totalPrice); 
-      await fetchPointData();
+      setUserPoint((prevPoint) => prevPoint - totalPrice);
       alert("구매가 완료되었습니다.");
+      await fetchPointData();
+      await fetchPurchaseInfo(stock.isinCd);
     } catch (error) {
       console.error("구매 실패:", error);
       alert("구매 중 오류가 발생했습니다.");
     }
   };
-  
 
   useEffect(() => {
     if (stock?.itmsNm) {
@@ -105,6 +147,7 @@ const StockChartDetailPage = ({ stock, toggleSidebar, isSidebarVisible, userPoin
   useEffect(() => {
     fetchSession();
     fetchPointData();
+    fetchPurchaseInfo(stock.isinCd);
   }, []);
 
   const handleQuantityChange = (type) => {
@@ -282,30 +325,58 @@ const StockChartDetailPage = ({ stock, toggleSidebar, isSidebarVisible, userPoin
 
                 {/* 구매 가격 */}
                 <div className="form-group">
-                  <label>구매 가격</label>
-                  <div className="price-type">
-                    <button
-                      className={`price-button ${
-                        priceType === "지정가" ? "active" : ""
-                      }`}
-                      onClick={() => setPriceType("지정가")}
-                    >
-                      지정가
-                    </button>
-                  </div>
-                  <div className="price-input">
-                    <input
-                      type="text"
-                      value={`${price.toLocaleString()} 원`}
-                      readOnly
-                    />
-                    {/* <button onClick={() => setPrice((prev) => prev - 100)}>
-                    −
-                  </button>
-                  <button onClick={() => setPrice((prev) => prev + 100)}>
-                    +
-                  </button> */}
-                  </div>
+                  {orderType === "판매" ? (
+                    <>
+                      <label>판매 가격</label>
+                      <div className="price-type">
+                        <button
+                          className={`price-button ${
+                            priceType === "지정가" ? "active" : ""
+                          }`}
+                          onClick={() => setPriceType("지정가")}
+                        >
+                          시장가
+                        </button>
+                      </div>
+                      <div className="price-input">
+                        <input
+                          type="text"
+                          value={`${price.toLocaleString()} 원`}
+                          readOnly
+                        />
+                      </div>
+                      <br />
+                      <label>내가 산 평균 가격</label>
+                      <div className="price-input">
+                        <input
+                          type="text"
+                          value={`${purchaseInfo.avgStock.toLocaleString()} 원`}
+                          readOnly
+                        />
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <label>구매 가격</label>
+                      <div className="price-type">
+                        <button
+                          className={`price-button ${
+                            priceType === "지정가" ? "active" : ""
+                          }`}
+                          onClick={() => setPriceType("지정가")}
+                        >
+                          시장가
+                        </button>
+                      </div>
+                      <div className="price-input">
+                        <input
+                          type="text"
+                          value={`${price.toLocaleString()} 원`}
+                          readOnly
+                        />
+                      </div>
+                    </>
+                  )}
                 </div>
 
                 {/* 수량 */}
@@ -335,38 +406,102 @@ const StockChartDetailPage = ({ stock, toggleSidebar, isSidebarVisible, userPoin
                 <hr />
 
                 <div className="form-summary">
-                  <div className="summary-row">
-                    <span>구매가능 금액</span>
-                    <span>{userPoint.toLocaleString()}원</span>
-                  </div>
-                  <div className="summary-row">
-                    <span>총 주문 금액</span>
-                    <span>{(quantity * price).toLocaleString()}원</span>
-                  </div>
+                  {orderType === "구매" ? (
+                    <>
+                      <div className="summary-row">
+                        <span>구매가능 금액</span>
+                        <span>{userPoint.toLocaleString()}원</span>
+                      </div>
+                      <div className="summary-row">
+                        <span>총 주문 금액</span>
+                        <span>{(quantity * price).toLocaleString()}원</span>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="summary-row">
+                        <span>총 판매 금액</span>
+                        <span>{(quantity * price).toLocaleString()}원</span>
+                      </div>
+                      <div className="summary-row">
+                        <span>판매 후 총 포인트</span>
+                        <span>
+                          {(quantity * price + userPoint).toLocaleString()}원
+                        </span>
+                      </div>
+                      <div className="summary-row">
+                        <span>수익</span>
+                        <span>
+                          {((price - purchaseInfo.avgStock)*quantity).toLocaleString()}원
+                        </span>
+                      </div>
+                    </>
+                  )}
                 </div>
 
                 {session ? (
                   quantity >= 1 ? (
-                    userPoint >= quantity * price ? (
-                      <button
-                        className="order-button-s"
-                        onClick={() => setPurchaseModal(true)}
-                      >
-                        구매하기
-                      </button>
+                    orderType === "구매" ? (
+                      userPoint >= quantity * price ? (
+                        <button
+                          className="order-button-s"
+                          onClick={() => setPurchaseModal(true)}
+                        >
+                          구매하기
+                        </button>
+                      ) : (
+                        <button className="order-button-f" disabled>
+                          소지한 포인트가 부족합니다.
+                        </button>
+                      )
                     ) : (
-                      <button className="order-button-f" disabled>
-                        소지한 포인트가 적습니다.
-                      </button>
+                      <div>
+                        {myStock.some(
+                          (data) =>
+                            data.stockDTO.stockName === stock.itmsNm &&
+                            data.cumulativeStockDTO.countStock >= quantity
+                        ) ? (
+                          <>
+                            <label>
+                              보유 주식수:{" "}
+                              {
+                                myStock.find(
+                                  (data) =>
+                                    data.stockDTO.stockName === stock.itmsNm
+                                )?.cumulativeStockDTO.countStock
+                              }
+                            </label>
+                            <button
+                              className="order-button-s"
+                              onClick={() => handleSell()}
+                            >
+                              판매하기
+                            </button>
+                          </>
+                        ) : (
+                          <>
+                            <label>
+                              보유 주식수:{" "}
+                              {myStock.find(
+                                (data) =>
+                                  data.stockDTO.stockName === stock.itmsNm
+                              )?.cumulativeStockDTO.countStock || 0}
+                            </label>
+                            <button className="order-button-f" disabled>
+                              보유중인 주식이 없거나 수량을 초과했습니다.
+                            </button>
+                          </>
+                        )}
+                      </div>
                     )
                   ) : (
                     <button className="order-button-f" disabled>
-                      수량 1개 이상부터 구매가 가능합니다.
+                      수량은 1개 이상이어야 합니다.
                     </button>
                   )
                 ) : (
                   <button className="order-button-f" disabled>
-                    로그인하고 구매하기
+                    로그인 후 거래 가능합니다.
                   </button>
                 )}
               </div>
@@ -388,7 +523,7 @@ const StockChartDetailPage = ({ stock, toggleSidebar, isSidebarVisible, userPoin
               <button
                 className="confirm-button"
                 onClick={() => {
-                  purchaseStock(stock.isinCd, quantity*price);
+                  purchaseStock(stock.isinCd, quantity * price);
                   setPurchaseModal(false);
                 }}
               >

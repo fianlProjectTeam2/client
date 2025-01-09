@@ -4,15 +4,33 @@ import AuthAPI from "../api/AuthAPI";
 import PointAPI from "../api/PointAPI";
 import StockAPI from "../api/StockAPI";
 
-const SideBar = ({ isVisible, toggleSidebar, userPoint, setUserPoint }) => {
+const SideBar = ({
+  isVisible,
+  toggleSidebar,
+  userPoint,
+  setUserPoint,
+  setSelectedStock,
+  setCurrentPage,
+  myStock,
+  setMyStock,
+}) => {
   const [session, setSession] = useState();
   const [pointModal, setPointModal] = useState(false);
   const [chargeAmount, setChargeAmount] = useState("");
-  const [myStock, setMyStock] = useState([]);
   const [myFinances, setMyFinances] = useState(0);
+  const [searchQuery, setSearchQuery] = useState(""); // 검색어 상태
 
   const handlePoint = () => {
     setPointModal(true);
+  };
+
+  const handleDetail = (data) => {
+    const stock = {
+      itmsNm: data.stockDTO.stockName,
+      isinCd: data.stockDTO.stockCode,
+    };
+    setSelectedStock(stock);
+    setCurrentPage("reload");
   };
 
   const fetchMyStock = async () => {
@@ -109,6 +127,13 @@ const SideBar = ({ isVisible, toggleSidebar, userPoint, setUserPoint }) => {
     fetchMyFinances();
   }, [userPoint]);
 
+  // 검색 필터링
+  const filteredStocks = myStock
+    .filter((data) => data.cumulativeStockDTO.countStock > 0) // 보유 주식 수 0 제외
+    .filter((data) =>
+      data.stockDTO.stockName.toLowerCase().includes(searchQuery.toLowerCase())
+    ); // 검색어 적용
+
   return (
     <>
       {session ? (
@@ -161,14 +186,28 @@ const SideBar = ({ isVisible, toggleSidebar, userPoint, setUserPoint }) => {
           </div>
           <div className="stocks-card">
             <h2 className="stocks-title">소유중인 주식</h2>
-            <h3 className="stocks-title">보유 재산 : {myFinances.toLocaleString()} 원</h3>
+            <h3 className="stocks-title">
+              보유 재산 : {myFinances.toLocaleString()} 원
+            </h3>
+            {/* 검색 입력 */}
+            <input
+              type="text"
+              placeholder="주식명을 검색하세요"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="search-input"
+            />
             <ul className="stocks-list">
-              {myStock.map((data, index) => (
-                <li key={index}>
-                  {data.stockDTO.stockName} - 보유 주식 수:{" "}
-                  {data.cumulativeStockDTO.countStock}
-                </li>
-              ))}
+              {filteredStocks.length > 0 ? (
+                filteredStocks.map((data, index) => (
+                  <li key={index} onClick={() => handleDetail(data)}>
+                    {data.stockDTO.stockName} - 보유 주식 수:{" "}
+                    {data.cumulativeStockDTO.countStock}
+                  </li>
+                ))
+              ) : (
+                <li>검색 결과가 없습니다.</li>
+              )}
             </ul>
           </div>
         </div>

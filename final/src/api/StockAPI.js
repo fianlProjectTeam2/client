@@ -9,11 +9,24 @@ const StockAPI = {
     });
   },
 
-  fetchMyFinances : () =>{
-    return axios.get(`${API_URL}/stock/myFinances`,{
-        withCredentials: true,
-    })
-  }
+  fetchMyFinances: () => {
+    return axios.get(`${API_URL}/stock/myFinances`, {
+      withCredentials: true,
+    });
+  },
+
+  fetchPurchaseInfo: (data) => {
+    return axios.get(`${API_URL}/stock/purchase/info`, {
+      params: { stockCode: data },
+      withCredentials: true,
+    });
+  },
+
+  sellStock: (data) => {
+    return axios.post(`${API_URL}/stock/sell`, data, {
+      withCredentials: true,
+    });
+  },
 };
 
 export default StockAPI;
