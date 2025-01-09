@@ -1,0 +1,84 @@
+.main-content {
+  flex: 1;
+  margin: 20px;
+  font-family: "Arial", sans-serif;
+  background-color: #f9f9f9;
+  padding: 20px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+}
+
+table {
+  width: 100%;
+  max-width: 1300px;
+  margin: 0 auto;
+  border-collapse: collapse;
+  background-color: white;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+table th,
+table td {
+  padding: 16px;
+  border: 1px solid #ddd;
+  text-align: center;
+  font-size: 1rem;
+}
+
+table thead {
+  background-color: #007bff;
+  color: white;
+}
+
+table a {
+  color: black;
+  text-decoration-line: none;
+  font-weight: bold;
+}
+
+table tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+@media screen and (max-width: 768px) {
+  .main-content {
+    padding: 10px;
+  }
+
+  table th,
+  table td {
+    font-size: 0.5rem;
+    padding: 10px;
+  }
+
+  .search-container input[type="search"] {
+    width: 80%;
+  }
+
+  .search-container input[type="submit"] {
+    width: 100%;
+    margin-top: 10px;
+  }
+}
+
+table .top-rank-1 {
+  background-color: gold;
+  font-weight: bold;
+}
+
+table .top-rank-2 {
+  background-color: rgba(192, 192, 192, 0.297);
+  font-weight: bold;
+}
+
+table .top-rank-3 {
+  background-color: #cd7f32;
+  font-weight: bold;
+}
+
+h2 {
+  text-align: center;
+}
+
+
