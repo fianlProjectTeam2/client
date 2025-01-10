@@ -1,13 +1,13 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import StockCard from "../components/StockCard";
 import NewsCard from "../components/NewsCard";
 import MainChart from "../components/MainChart";
 import "../static/resources/css/HomePage.css";
 
-const HomePage = (setCurrentPage) => {
+const HomePage = () => {
   const stocks = [
     { id: 1, name: "코스피", price: "2,479.24", change: 0.9 },
-    { id: 2, name: "코스닥", price: "2690.72", change: -0.5 },
+    { id: 2, name: "코스닥", price: "2,690.72", change: -0.5 },
   ];
 
   const news = [
@@ -25,6 +25,18 @@ const HomePage = (setCurrentPage) => {
     },
   ];
 
+  const [stockData, setStockData] = useState([]);
+
+  useEffect(() => {
+    const socket = new WebSocket("ws://localhost:8081");
+    socket.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      console.log(data);
+      setStockData((prevData) => [data, ...prevData].slice(0, 10));
+    };
+    return () => socket.close();
+  }, []);
+
   return (
     <div className="app">
       <main className="content">
@@ -38,7 +50,7 @@ const HomePage = (setCurrentPage) => {
             />
           ))}
         </div>
-        <MainChart />
+        <MainChart data={stockData} />
         <div className="news">
           {news.map((item) => (
             <NewsCard

@@ -7,6 +7,7 @@ import SideBar from "./components/SideBar";
 import Footer from "./components/Footer";
 import Reload from "./components/Reload";
 import Rank from "./pages/Rank";
+import KafkaData from "./components/KafkaData";
 
 const HomePage = lazy(() => import("./pages/HomePage"));
 const StockListPage = lazy(() => import("./pages/StockListPage"));
@@ -19,7 +20,15 @@ function App() {
   const [selectedStock, setSelectedStock] = useState(null);
   const [userPoint, setUserPoint] = useState(0);
   const [myStock, setMyStock] = useState([]);
-  
+
+  // const fetchName = async () => {
+  //   try{
+  //     const response = await BackAPI();
+
+  //   }catch(error){
+  //     console.error(error);
+  //   }
+  // }
 
   const toggleSidebar = () => {
     setIsSidebarVisible(!isSidebarVisible);
@@ -52,9 +61,14 @@ function App() {
       case "news":
         return <News />;
       case "reload":
-        return <Reload setCurrentPage={setCurrentPage} selectedStock={selectedStock} />
+        return (
+          <Reload
+            setCurrentPage={setCurrentPage}
+            selectedStock={selectedStock}
+          />
+        );
       case "rank":
-        return <Rank />
+        return <Rank />;
       default:
         return <HomePage onLogout={() => setCurrentPage("login")} />;
     }
@@ -70,7 +84,16 @@ function App() {
           </Suspense>
         </main>
 
-        <SideBar isVisible={isSidebarVisible} toggleSidebar={toggleSidebar} userPoint={userPoint} setUserPoint={setUserPoint} setSelectedStock={setSelectedStock} setCurrentPage={setCurrentPage} myStock={myStock} setMyStock={setMyStock}/>
+        <SideBar
+          isVisible={isSidebarVisible}
+          toggleSidebar={toggleSidebar}
+          userPoint={userPoint}
+          setUserPoint={setUserPoint}
+          setSelectedStock={setSelectedStock}
+          setCurrentPage={setCurrentPage}
+          myStock={myStock}
+          setMyStock={setMyStock}
+        />
       </div>
       <Footer />
     </BrowserRouter>

@@ -1,0 +1,22 @@
+.MainChart-Container {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
+}
+
+.main-chart {
+  flex: 2;
+}
+
+.stock-table {
+  flex: 1;
+  overflow-y: auto;
+  max-height: 650px;
+}
+
+.stock-table table {
+  width: 100%;
+  border-collapse: collapse;
+}
