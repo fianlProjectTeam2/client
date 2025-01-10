@@ -14,7 +14,7 @@ const SideBar = ({
   myStock,
   setMyStock,
 }) => {
-  const [session, setSession] = useState();
+  const [session, setSession] = useState(null);
   const [pointModal, setPointModal] = useState(false);
   const [chargeAmount, setChargeAmount] = useState("");
   const [myFinances, setMyFinances] = useState(0);
@@ -88,10 +88,19 @@ const SideBar = ({
   };
 
   const handleLoginClick = () => {
+    const width = 600;
+    const height = 500;
+
+    const screenWidth = window.screen.width;
+    const screenHeight = window.screen.height;
+
+    const left = (screenWidth - width) / 2;
+    const top = (screenHeight - height) / 2;
+
     const loginWindow = window.open(
       "http://localhost:8080/login/react",
       "LoginWindow",
-      "width=600,height=300"
+      `width=${width},height=${height},left=${left},top=${top}`
     );
 
     const timer = setInterval(() => {

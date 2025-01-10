@@ -15,9 +15,12 @@ const Header = ({ setCurrentPage }) => {
             <a onClick={() => setCurrentPage("stock")}>주식 골라보기</a>
           </li>
           <li>
+            <a onClick={() => window.location.href = "http://localhost:8080/post/postList"}>게시판</a>
+          </li>
+          <li>문의</li>
+          <li>
             <a onClick={() => setCurrentPage("rank")}>랭킹</a>
           </li>
-          <li>게시판</li>
         </ul>
       </nav>
       <button className="login-btn"></button>
