@@ -8,6 +8,7 @@ import Footer from "./components/Footer";
 import Reload from "./components/Reload";
 import Rank from "./pages/Rank";
 import KafkaData from "./components/KafkaData";
+import MoveAPI from "./api/MoveAPI";
 
 const HomePage = lazy(() => import("./pages/HomePage"));
 const StockListPage = lazy(() => import("./pages/StockListPage"));
@@ -21,14 +22,18 @@ function App() {
   const [userPoint, setUserPoint] = useState(0);
   const [myStock, setMyStock] = useState([]);
 
-  // const fetchName = async () => {
-  //   try{
-  //     const response = await BackAPI();
+  const fetchMoveData = async () => {
+    try{
+      const response = await MoveAPI.fetchMoveData();
+      setCurrentPage(response.data);
+    }catch(error){
+      console.error(error);
+    };
+  };
 
-  //   }catch(error){
-  //     console.error(error);
-  //   }
-  // }
+  useEffect(()=> {
+    fetchMoveData();
+  },[]);
 
   const toggleSidebar = () => {
     setIsSidebarVisible(!isSidebarVisible);
