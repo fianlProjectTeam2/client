@@ -27,6 +27,12 @@ const StockAPI = {
       withCredentials: true,
     });
   },
+
+  defaultStockData: () =>{
+    return axios.get(`${API_URL}/stock/default/data`, {
+      withCredentials: true,
+    });
+  },
 };
 
 export default StockAPI;
