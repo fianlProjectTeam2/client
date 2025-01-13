@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import "../static/resources/css/StockListPage.css";
 import ChartAPI from "../api/ChartAPI";
 import StockAPI from "../api/StockAPI";
+import NewsAPI from "../api/NewsAPI";
 
 const StockListPage = ({ setCurrentPage, setSelectedStock }) => {
   const [chartData, setChartData] = useState([]);
@@ -25,33 +26,78 @@ const StockListPage = ({ setCurrentPage, setSelectedStock }) => {
     }
   };
 
-  // 새로운 데이터를 fetch하는 함수
+  // AI 분석 점수 데이터를 fetch하고 회사별 평균 점수 계산
+  const fetchScoreData = async () => {
+    try {
+      const response = await NewsAPI.fetchPredicScore();
+      const scores = response.data;
+
+      // 회사별 평균 점수 계산
+      const companyScores = scores.reduce((acc, item) => {
+        const { companyName, articlePredictionValue } = item;
+
+        if (!acc[companyName]) {
+          acc[companyName] = { total: 0, count: 0 };
+        }
+
+        acc[companyName].total += articlePredictionValue;
+        acc[companyName].count += 1;
+
+        return acc;
+      }, {});
+
+      // 평균 점수 계산
+      const averageScores = Object.entries(companyScores).reduce(
+        (result, [companyName, { total, count }]) => {
+          result[companyName] = total / count;
+          return result;
+        },
+        {}
+      );
+
+      return averageScores;
+    } catch (error) {
+      console.error("Error fetching AI scores:", error);
+      return {};
+    }
+  };
+
+  // 주식 데이터를 fetch하고 AI 점수 병합
   const fetchData = async () => {
     setIsLoading(true);
     try {
+      const aiScores = await fetchScoreData(); // AI 점수 가져오기
       const response = await ChartAPI.fetchStockData();
       const responses = response?.data || [];
-      const items = responses.flatMap((res) => res?.response?.body?.items?.item || []);
+      const items = responses.flatMap(
+        (res) => res?.response?.body?.items?.item || []
+      );
 
-      const transformedData = items.map((item) => ({
-        symbol: item.isinCd,
-        basDt: item.basDt,
-        clpr: parseFloat(item.clpr),
-        fltRt: parseFloat(item.fltRt),
-        hipr: item.hipr,
-        isinCd: item.isinCd,
-        itmsNm: item.itmsNm,
-        lopr: item.lopr,
-        lstgStCnt: item.lstgStCnt,
-        mkp: item.mkp,
-        mrktCtg: item.mrktCtg,
-        mrktTotAmt: parseFloat(item.mrktTotAmt) / 1e8,
-        srtnCd: item.srtnCd,
-        trPrc: item.trPrc,
-        trqu: parseInt(item.trqu, 10),
-        analysis: "-",
-        vs: parseFloat(item.vs),
-      }));
+      const transformedData = items.map((item) => {
+        const companyName = item.itmsNm; // 회사명
+        const aiScore = aiScores[companyName] || "-"; // AI 점수 없으면 '-'
+
+        return {
+          symbol: item.isinCd,
+          basDt: item.basDt,
+          clpr: parseFloat(item.clpr),
+          fltRt: parseFloat(item.fltRt),
+          hipr: item.hipr,
+          isinCd: item.isinCd,
+          itmsNm: companyName,
+          lopr: item.lopr,
+          lstgStCnt: item.lstgStCnt,
+          mkp: item.mkp,
+          mrktCtg: item.mrktCtg,
+          mrktTotAmt: parseFloat(item.mrktTotAmt) / 1e8,
+          srtnCd: item.srtnCd,
+          trPrc: item.trPrc,
+          trqu: parseInt(item.trqu, 10),
+          analysis: aiScore, // AI 점수 추가
+          vs: parseFloat(item.vs),
+        };
+      });
+
       setChartData(transformedData);
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -61,13 +107,8 @@ const StockListPage = ({ setCurrentPage, setSelectedStock }) => {
     }
   };
 
-  // 컴포넌트가 마운트되었을 때 초기 데이터를 가져옴
   useEffect(() => {
     fetchDefaultData();
-  }, []);
-
-  // 새로운 데이터를 fetch
-  useEffect(() => {
     fetchData();
   }, []);
 
@@ -85,9 +126,7 @@ const StockListPage = ({ setCurrentPage, setSelectedStock }) => {
       </div>
 
       {isLoading && (
-        <div className="loadingMessage">
-          세부 데이터를 가져오는 중입니다...
-        </div>
+        <div className="loadingMessage">세부 데이터를 가져오는 중입니다...</div>
       )}
 
       {!isLoading && error && <p style={{ color: "red" }}>Error: {error}</p>}
@@ -132,7 +171,9 @@ const StockListPage = ({ setCurrentPage, setSelectedStock }) => {
                   </td>
                   <td>{(stock.mrktTotAmt || 0).toLocaleString()}억원</td>
                   <td>{(stock.lstgStCnt || 0).toLocaleString()}주</td>
-                  <td>{stock.analysis || "-"}</td>
+                  <td>
+                    {stock.analysis !== "-" ? stock.analysis.toFixed(2) : "-"}
+                  </td>
                   <td style={{ color: stock.vs > 0 ? "red" : "blue" }}>
                     {stock.vs > 0 ? "+" : ""}
                     {stock.vs || "-"}원
