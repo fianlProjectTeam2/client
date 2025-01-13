@@ -31,6 +31,7 @@ const StockChartDetailPage = ({
   const [sellModal, setSellModal] = useState(false);
 
   const [purchaseInfo, setPurchaseInfo] = useState();
+  const [purchaseIsinCd, setPurchaseIsinCd] = useState("");
 
   const handleSell = async () => {
     sellStock();
@@ -39,16 +40,16 @@ const StockChartDetailPage = ({
   const sellStock = async () => {
     try {
       const payload = {
-        stockCode: stock.isinCd,
+        stockCode: purchaseIsinCd,
         virtualDealPrice: price,
         virtualDealVolume: quantity,
-        profit: (price - purchaseInfo.avgStock) * quantity
+        profit: (price - purchaseInfo.avgStock) * quantity,
       };
-      
+
       const response = await StockAPI.sellStock(payload);
       alert("판매가 완료되었습니다.");
       await fetchPointData();
-      await fetchPurchaseInfo(stock.isinCd);
+      await fetchPurchaseInfo(purchaseIsinCd);
     } catch (error) {
       console.error("판매 실패:", error);
       alert("판매 중 오류가 발생했습니다.");
@@ -57,7 +58,9 @@ const StockChartDetailPage = ({
 
   const fetchPurchaseInfo = async (data) => {
     try {
-      const response = await StockAPI.fetchPurchaseInfo(data);
+      console.log(purchaseIsinCd);
+      const response = await StockAPI.fetchPurchaseInfo(purchaseIsinCd);
+      console.log(response);
       setPurchaseInfo(response.data);
       console.log(response.data);
     } catch (error) {
@@ -94,6 +97,7 @@ const StockChartDetailPage = ({
         (res) => res?.response?.body?.items?.item || []
       );
       console.log(items);
+      setPurchaseIsinCd(items[0].isinCd);
       const transformedData = items.map((item) => ({
         symbol: item.isinCd, // 종목 코드
         basDt: item.basDt, // 기준일자
@@ -123,7 +127,7 @@ const StockChartDetailPage = ({
   const purchaseStock = async (isinCd, totalPrice) => {
     try {
       const response = await PurchaseAPI.purchaseStock({
-        stockCode: isinCd,
+        stockCode: purchaseIsinCd,
         virtualDealPrice: totalPrice,
         virtualDealVolume: quantity,
       });
@@ -131,7 +135,7 @@ const StockChartDetailPage = ({
       setUserPoint((prevPoint) => prevPoint - totalPrice);
       alert("구매가 완료되었습니다.");
       await fetchPointData();
-      await fetchPurchaseInfo(stock.isinCd);
+      await fetchPurchaseInfo(purchaseIsinCd);
     } catch (error) {
       console.error("구매 실패:", error);
       alert("구매 중 오류가 발생했습니다.");
@@ -142,13 +146,26 @@ const StockChartDetailPage = ({
     if (stock?.itmsNm) {
       fetchData();
     }
+
+    if (stock?.itmsNm === "삼성전자") {
+      const socket = new WebSocket("ws://localhost:8081");
+      socket.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        const dealPrice = parseInt(data.dealPrice, 10);
+        setPrice(dealPrice);
+      };
+      return () => socket.close();
+    }
   }, [stock]);
 
   useEffect(() => {
     fetchSession();
     fetchPointData();
-    fetchPurchaseInfo(stock.isinCd);
   }, []);
+
+  useEffect(() => {
+    fetchPurchaseInfo(purchaseIsinCd);
+  }, [purchaseIsinCd]);
 
   const handleQuantityChange = (type) => {
     if (type === "increment") {
@@ -339,18 +356,14 @@ const StockChartDetailPage = ({
                         </button>
                       </div>
                       <div className="price-input">
-                        <input
-                          type="text"
-                          value={`${price.toLocaleString()} 원`}
-                          readOnly
-                        />
+                        <input type="text" value={`${price} 원`} readOnly />
                       </div>
                       <br />
                       <label>내가 산 평균 가격</label>
                       <div className="price-input">
                         <input
                           type="text"
-                          value={`${purchaseInfo.avgStock.toLocaleString()} 원`}
+                          value={`${purchaseInfo.avgStock} 원`}
                           readOnly
                         />
                       </div>
@@ -432,7 +445,11 @@ const StockChartDetailPage = ({
                       <div className="summary-row">
                         <span>수익</span>
                         <span>
-                          {((price - purchaseInfo.avgStock)*quantity).toLocaleString()}원
+                          {(
+                            (price - purchaseInfo.avgStock) *
+                            quantity
+                          ).toLocaleString()}
+                          원
                         </span>
                       </div>
                     </>
