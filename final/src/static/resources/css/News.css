@@ -126,3 +126,37 @@ button {
   transition: background-color 0.3s, box-shadow 0.3s;
   cursor: pointer;
 }
+
+.custom-select {
+  font-size: 16px;
+  padding: 10px 15px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+  color: #333;
+  outline: none;
+  transition: all 0.3s ease;
+  width: 250px;
+  cursor: pointer;
+  text-align: center;
+}
+
+.custom-select:hover {
+  border-color: #888;
+  background-color: #f0f0f0;
+}
+
+.custom-select:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}
+
+.custom-select option {
+  text-align: left;
+  padding: 10px;
+}
+
+.select-container {
+  margin: 20px auto;
+  text-align: center;
+}
