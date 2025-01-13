@@ -65,7 +65,7 @@
 }
 
 .data-table th {
-  background-color: #f1f3f5;
+  background-color: #007bff;
 }
 
 .data-table tbody tr:nth-child(even) {
@@ -175,7 +175,7 @@ h3 {
 .quantity-buttons button {
   padding: 5px 10px;
   border: 1px solid #ddd;
-  background-color: #fff;
+  background-color: #007bff;
   border-radius: 4px;
   cursor: pointer;
 }
