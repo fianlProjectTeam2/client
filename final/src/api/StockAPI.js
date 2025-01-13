@@ -33,6 +33,13 @@ const StockAPI = {
       withCredentials: true,
     });
   },
+
+  fetchChartData: () =>{
+    return axios.get(`${API_URL}/stock/chartData`, {
+      withCredentials: true,
+    });
+  },
+  
 };
 
 export default StockAPI;

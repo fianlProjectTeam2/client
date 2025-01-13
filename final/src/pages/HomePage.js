@@ -27,16 +27,6 @@ const HomePage = () => {
 
   const [stockData, setStockData] = useState([]);
 
-  useEffect(() => {
-    const socket = new WebSocket("ws://localhost:8081");
-    socket.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      console.log(data);
-      setStockData((prevData) => [data, ...prevData].slice(0, 10));
-    };
-    return () => socket.close();
-  }, []);
-
   return (
     <div className="app">
       <main className="content">
@@ -50,7 +40,7 @@ const HomePage = () => {
             />
           ))}
         </div>
-        <MainChart data={stockData} />
+        <MainChart initialData={stockData} />
         <div className="news">
           {news.map((item) => (
             <NewsCard
