@@ -3,21 +3,16 @@ import "../static/resources/css/News.css";
 import NewsAPI from "../api/NewsAPI";
 
 const News = () => {
-  const [searchWord, setSearchWord] = useState("");
+  const [selectedCompany, setSelectedCompany] = useState("삼성전자");
   const [newsData, setNewsData] = useState([]);
 
-  const handleSearchChange = (e) => {
-    setSearchWord(e.target.value);
+  const handleCompanyChange = (e) => {
+    setSelectedCompany(e.target.value);
   };
 
-  const handleSearchSubmit = (e) => {
-    e.preventDefault();
-    window.location.href = `/postList?page=1&searchWord=${searchWord}`;
-  };
-
-  const fetchNews = async () => {
+  const fetchNews = async (company) => {
     try {
-      const response = await NewsAPI.fetchNewsData();
+      const response = await NewsAPI.fetchNewsData(company);
       setNewsData(response.data);
     } catch (error) {
       console.error("Error fetching news data", error);
@@ -37,20 +32,41 @@ const News = () => {
   };
 
   useEffect(() => {
-    fetchNews();
-  }, []);
+    fetchNews(selectedCompany);
+  }, [selectedCompany]);
 
   return (
     <div>
       <main className="main-content">
+        <div
+          className="select-container"
+          style={{ textAlign: "center", marginBottom: "20px" }}
+        >
+          <select
+            className="custom-select"
+            value={selectedCompany}
+            onChange={handleCompanyChange}
+          >
+            <option value="삼성전자">삼성전자</option>
+            <option value="SK하이닉스">SK하이닉스</option>
+            <option value="LG에너지솔루션">LG에너지솔루션</option>
+            <option value="삼성바이오로직스">삼성바이오로직스</option>
+            <option value="현대차">현대차</option>
+            <option value="셀트리온">셀트리온</option>
+            <option value="기아">기아</option>
+            <option value="KB금융">KB금융</option>
+            <option value="NAVER">NAVER</option>
+            <option value="신한지주">신한지주</option>
+          </select>
+        </div>
+
         <table border="1">
           <thead>
             <tr>
-              <th>기사번호</th>
+              <th>번호</th>
               <th>제목</th>
               <th>기사요약</th>
-              {/* <th>기사내용</th> */}
-              <th>기사주소</th>
+              <th>주소</th>
             </tr>
           </thead>
           <tbody>
@@ -59,7 +75,6 @@ const News = () => {
                 <td>{index + 1}</td>
                 <td>{truncateText(stripHtmlTags(news.title), 40)}</td>
                 <td>{truncateText(stripHtmlTags(news.description), 40)}</td>
-                {/* <td>{truncateText(stripHtmlTags(news.body), 20)}</td> */}
                 <td>
                   <a href={news.link} target="_blank" rel="noopener noreferrer">
                     {"주소"}
@@ -70,28 +85,10 @@ const News = () => {
           </tbody>
           <tfoot>
             <tr>
-              <td colSpan="5" style={{ textAlign: "center" }}>
-
-              </td>
+              <td colSpan="4" style={{ textAlign: "center" }}></td>
             </tr>
           </tfoot>
         </table>
-
-        <div
-          className="search-container"
-          style={{ textAlign: "center", marginTop: "20px" }}
-        >
-          <form onSubmit={handleSearchSubmit}>
-            <input
-              type="search"
-              id="searchWord"
-              name="searchWord"
-              value={searchWord}
-              onChange={handleSearchChange}
-            />
-            <button type="submit">검색</button>
-          </form>
-        </div>
       </main>
     </div>
   );
