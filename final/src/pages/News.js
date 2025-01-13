@@ -5,19 +5,66 @@ import NewsAPI from "../api/NewsAPI";
 const News = () => {
   const [selectedCompany, setSelectedCompany] = useState("삼성전자");
   const [newsData, setNewsData] = useState([]);
+  const [predictionData, setPredictionData] = useState([]);
 
   const handleCompanyChange = (e) => {
     setSelectedCompany(e.target.value);
   };
 
+  const fetchPrediction = async () => {
+    try {
+      const response = await NewsAPI.fetchPredicData();
+      console.log(response.data);
+      setPredictionData(response.data);
+    } catch (error) {
+      console.error("Error fetching prediction data", error);
+    }
+  };
+
   const fetchNews = async (company) => {
     try {
       const response = await NewsAPI.fetchNewsData(company);
+      console.log("News Data:", response.data);
       setNewsData(response.data);
     } catch (error) {
       console.error("Error fetching news data", error);
     }
   };
+
+  const mergeData = () => {
+    const mergedData = newsData.map((newsItem) => {
+      const matchingPrediction = predictionData.find(
+        (prediction) => prediction.articleSubject === newsItem.title
+      );
+
+      if (matchingPrediction) {
+        return {
+          ...newsItem,
+          predictionValue: matchingPrediction.articlePredictionValue,
+          predictionContents: matchingPrediction.articlePredictionContents,
+        };
+      }
+
+      return {
+        ...newsItem,
+        predictionValue: null,
+        predictionContents: null,
+      };
+    });
+
+    setNewsData(mergedData);
+  };
+
+  useEffect(() => {
+    fetchNews(selectedCompany);
+    fetchPrediction();
+  }, [selectedCompany]);
+
+  useEffect(() => {
+    if (newsData.length > 0 && predictionData.length > 0) {
+      mergeData();
+    }
+  }, [newsData, predictionData]);
 
   const truncateText = (text, maxLength) => {
     return text.length > maxLength
@@ -30,10 +77,6 @@ const News = () => {
     div.innerHTML = text;
     return div.textContent || div.innerText || "";
   };
-
-  useEffect(() => {
-    fetchNews(selectedCompany);
-  }, [selectedCompany]);
 
   return (
     <div>
@@ -66,17 +109,21 @@ const News = () => {
               <th>번호</th>
               <th>제목</th>
               <th>기사요약</th>
+              <th>분석내용</th>
+              <th>분석점수</th>
               <th>주소</th>
             </tr>
           </thead>
           <tbody>
-            {newsData.map((news, index) => (
+            {predictionData.map((news, index) => (
               <tr key={index}>
                 <td>{index + 1}</td>
-                <td>{truncateText(stripHtmlTags(news.title), 40)}</td>
-                <td>{truncateText(stripHtmlTags(news.description), 40)}</td>
+                <td>{truncateText(stripHtmlTags(news.articleSubject), 40)}</td>
+                <td>{truncateText(stripHtmlTags(news.articleSummary), 40)}</td>
+                <td>{news.articlePredictionContents || "예측중"}</td>
+                <td>{news.articlePredictionValue || "예측중"}</td>
                 <td>
-                  <a href={news.link} target="_blank" rel="noopener noreferrer">
+                  <a href={news.originalUrl} target="_blank" rel="noopener noreferrer">
                     {"주소"}
                   </a>
                 </td>
@@ -85,7 +132,7 @@ const News = () => {
           </tbody>
           <tfoot>
             <tr>
-              <td colSpan="4" style={{ textAlign: "center" }}></td>
+              <td colSpan="6" style={{ textAlign: "center" }}></td>
             </tr>
           </tfoot>
         </table>
