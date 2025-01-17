@@ -4,6 +4,7 @@ import AuthAPI from "../api/AuthAPI";
 import PointAPI from "../api/PointAPI";
 import StockAPI from "../api/StockAPI";
 import AlertAPI from "../api/AlertAPI";
+import RankAPI from "../api/RankAPI";
 
 const SideBar = ({
   isVisible,
@@ -22,6 +23,17 @@ const SideBar = ({
   const [searchQuery, setSearchQuery] = useState(""); // 검색어 상태
   const [isAdmin, setAdmin] = useState(false);
   const [alerts, setAlerts] = useState([]);
+  const [profit, setProfit] = useState(0);
+
+  const fetchProfit = async () => {
+    try {
+      const response = await RankAPI.fetchProfit();
+      setProfit(response.data);
+      console.log(response);
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   const handleConfirmAlert = async (alertNum) => {
     try {
@@ -34,15 +46,15 @@ const SideBar = ({
     }
   };
 
-  const checkAlert = async(alertNum) =>{
-    try{
+  const checkAlert = async (alertNum) => {
+    try {
       const response = await AlertAPI.checkAlert(alertNum);
       console.log(alertNum);
-    }catch(error){
+    } catch (error) {
       console.error(error);
       console.log(alertNum);
     }
-  }
+  };
 
   const fetchSessinIsAdmin = async () => {
     try {
@@ -174,11 +186,8 @@ const SideBar = ({
     fetchMyFinances();
     fetchAlertData();
     fetchSessinIsAdmin();
+    fetchProfit();
   }, []);
-
-  useEffect(() => {
-    fetchAlertData();
-  },[alerts])
 
   useEffect(() => {
     fetchPointData();
@@ -216,6 +225,10 @@ const SideBar = ({
       )}
       <aside className={`sidebar ${isVisible ? "visible" : ""}`}>
         <div className="wallet-container">
+          <div className="wallet-card">
+            <h2 className="wallet-title">내 수익률</h2>
+            <p>{profit} 원</p>
+          </div>
           <div className="wallet-card">
             <h2 className="wallet-title">🔔알림</h2>
             {alerts.length > 0 ? (

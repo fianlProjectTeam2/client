@@ -84,10 +84,6 @@ const SideBarS = ({
     fetchSessinIsAdmin();
   }, []);
 
-  useEffect(() => {
-    fetchAlertData();
-  }, [alerts]);
-
   // 검색 필터링
   const filteredStocks = myStock
     .filter((data) => data.cumulativeStockDTO.countStock > 0) // 보유 주식 수 0 제외
