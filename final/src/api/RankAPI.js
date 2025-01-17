@@ -14,6 +14,12 @@ const RankAPI = {
       withCredentials: true,
     });
   },
+
+  fetchProfit: () => {
+    return axios.get(`${API_URL}/profit`, {
+      withCredentials: true,
+    });
+  },
 };
 
 export default RankAPI;
