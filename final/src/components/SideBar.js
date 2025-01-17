@@ -3,6 +3,7 @@ import "../static/resources/css/SideBar.css";
 import AuthAPI from "../api/AuthAPI";
 import PointAPI from "../api/PointAPI";
 import StockAPI from "../api/StockAPI";
+import AlertAPI from "../api/AlertAPI";
 
 const SideBar = ({
   isVisible,
@@ -19,6 +20,47 @@ const SideBar = ({
   const [chargeAmount, setChargeAmount] = useState("");
   const [myFinances, setMyFinances] = useState(0);
   const [searchQuery, setSearchQuery] = useState(""); // 검색어 상태
+  const [isAdmin, setAdmin] = useState(false);
+  const [alerts, setAlerts] = useState([]);
+
+  const handleConfirmAlert = async (alertNum) => {
+    try {
+      await checkAlert(alertNum);
+      setAlerts((prevAlerts) =>
+        prevAlerts.filter((alert) => alert.alertNum !== alertNum)
+      );
+    } catch (error) {
+      console.error("Error confirming alert", error);
+    }
+  };
+
+  const checkAlert = async(alertNum) =>{
+    try{
+      const response = await AlertAPI.checkAlert(alertNum);
+      console.log(alertNum);
+    }catch(error){
+      console.error(error);
+      console.log(alertNum);
+    }
+  }
+
+  const fetchSessinIsAdmin = async () => {
+    try {
+      const response = await AuthAPI.sessionCheckIsAdmin();
+      setAdmin(response.data);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const fetchAlertData = async () => {
+    try {
+      const response = await AlertAPI.fetchAlertList();
+      setAlerts(response.data);
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   const handlePoint = () => {
     setPointModal(true);
@@ -121,13 +163,26 @@ const SideBar = ({
   };
 
   useEffect(() => {
+    if (isAdmin) {
+      window.location.href = "http://localhost:8080/user1/home";
+    }
+  }, [isAdmin]);
+
+  useEffect(() => {
     fetchSession();
     fetchMyStock();
     fetchMyFinances();
+    fetchAlertData();
+    fetchSessinIsAdmin();
   }, []);
 
   useEffect(() => {
+    fetchAlertData();
+  },[alerts])
+
+  useEffect(() => {
     fetchPointData();
+    fetchSessinIsAdmin();
   }, [session]);
 
   useEffect(() => {
@@ -161,6 +216,26 @@ const SideBar = ({
       )}
       <aside className={`sidebar ${isVisible ? "visible" : ""}`}>
         <div className="wallet-container">
+          <div className="wallet-card">
+            <h2 className="wallet-title">🔔알림</h2>
+            {alerts.length > 0 ? (
+              <ul>
+                {alerts.map((alert, index) => (
+                  <li key={index} className="alert-item">
+                    <p>{alert.alertContents || "내용 없음"}</p>
+                    <button
+                      className="confirm-btn"
+                      onClick={() => handleConfirmAlert(alert.alertNum)}
+                    >
+                      확인
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p>새 알림이 없습니다.</p>
+            )}
+          </div>
           <div className="wallet-card">
             <h2 className="wallet-title">내 지갑</h2>
             <p className="wallet-points">
@@ -198,7 +273,6 @@ const SideBar = ({
             <h3 className="stocks-title">
               보유 재산 : {myFinances.toLocaleString()} 원
             </h3>
-            {/* 검색 입력 */}
             <input
               type="text"
               placeholder="주식명을 검색하세요"
