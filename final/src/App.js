@@ -1,7 +1,7 @@
 import "./App.css";
 import "./static/resources/css/Styles.css";
 import React, { useState, Suspense, lazy, useEffect } from "react";
-import { BrowserRouter } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Header from "./components/Header";
 import SideBar from "./components/SideBar";
 import Footer from "./components/Footer";
@@ -9,6 +9,7 @@ import Reload from "./components/Reload";
 import Rank from "./pages/Rank";
 import KafkaData from "./components/KafkaData";
 import MoveAPI from "./api/MoveAPI";
+import SidBarS from "./components/SideBarS";
 
 const HomePage = lazy(() => import("./pages/HomePage"));
 const StockListPage = lazy(() => import("./pages/StockListPage"));
@@ -23,17 +24,17 @@ function App() {
   const [myStock, setMyStock] = useState([]);
 
   const fetchMoveData = async () => {
-    try{
+    try {
       const response = await MoveAPI.fetchMoveData();
       setCurrentPage(response.data);
-    }catch(error){
+    } catch (error) {
       console.error(error);
-    };
+    }
   };
 
-  useEffect(()=> {
+  useEffect(() => {
     fetchMoveData();
-  },[]);
+  }, []);
 
   const toggleSidebar = () => {
     setIsSidebarVisible(!isSidebarVisible);
@@ -81,26 +82,51 @@ function App() {
 
   return (
     <BrowserRouter>
-      <Header setCurrentPage={setCurrentPage} />
-      <div className="layout">
-        <main className="content">
-          <Suspense fallback={<div>Loading...</div>}>
-            {renderContent()}
-          </Suspense>
-        </main>
-
-        <SideBar
-          isVisible={isSidebarVisible}
-          toggleSidebar={toggleSidebar}
-          userPoint={userPoint}
-          setUserPoint={setUserPoint}
-          setSelectedStock={setSelectedStock}
-          setCurrentPage={setCurrentPage}
-          myStock={myStock}
-          setMyStock={setMyStock}
+      <Routes>
+        {/* / 경로 */}
+        <Route
+          path="/"
+          element={
+            <>
+              <Header setCurrentPage={setCurrentPage} />
+              <div className="layout">
+                <main className="content">
+                  <Suspense fallback={<div>Loading...</div>}>
+                    {renderContent()}
+                  </Suspense>
+                </main>
+                <SideBar
+                  isVisible={isSidebarVisible}
+                  toggleSidebar={toggleSidebar}
+                  userPoint={userPoint}
+                  setUserPoint={setUserPoint}
+                  setSelectedStock={setSelectedStock}
+                  setCurrentPage={setCurrentPage}
+                  myStock={myStock}
+                  setMyStock={setMyStock}
+                />
+              </div>
+              <Footer />
+            </>
+          }
         />
-      </div>
-      <Footer />
+
+        <Route
+          path="/mypage"
+          element={
+            <SidBarS
+              isVisible={isSidebarVisible}
+              toggleSidebar={toggleSidebar}
+              userPoint={userPoint}
+              setUserPoint={setUserPoint}
+              setSelectedStock={setSelectedStock}
+              setCurrentPage={setCurrentPage}
+              myStock={myStock}
+              setMyStock={setMyStock}
+            />
+          }
+        />
+      </Routes>
     </BrowserRouter>
   );
 }
