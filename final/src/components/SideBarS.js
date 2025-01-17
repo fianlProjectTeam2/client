@@ -4,6 +4,7 @@ import AuthAPI from "../api/AuthAPI";
 import PointAPI from "../api/PointAPI";
 import StockAPI from "../api/StockAPI";
 import AlertAPI from "../api/AlertAPI";
+import RankAPI from "../api/RankAPI";
 
 const SideBarS = ({
   userPoint,
@@ -20,6 +21,17 @@ const SideBarS = ({
 
   const [isAdmin, setAdmin] = useState(false);
   const [alerts, setAlerts] = useState([]);
+  const [profit, setProfit] = useState(0);
+
+  const fetchProfit = async () => {
+    try {
+      const response = await RankAPI.fetchProfit();
+      setProfit(response.data);
+      console.log(response);
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   const handleConfirmAlert = async (alertNum) => {
     try {
@@ -82,11 +94,8 @@ const SideBarS = ({
     fetchPointData();
     fetchMyStock();
     fetchSessinIsAdmin();
+    fetchProfit();
   }, []);
-
-  useEffect(() => {
-    fetchAlertData();
-  }, [alerts]);
 
   // 검색 필터링
   const filteredStocks = myStock
@@ -99,6 +108,10 @@ const SideBarS = ({
     <div className="table-container">
       <h2>내 정보</h2>
 
+      <h2 className="wallet-title">내 수익률</h2>
+      <ul>
+        <h2 style={{marginLeft:"-40px"}}>{profit}</h2>
+      </ul>
       <h2 className="wallet-title">🔔알림</h2>
       {alerts.length > 0 ? (
         <ul>
