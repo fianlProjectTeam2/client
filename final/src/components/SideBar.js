@@ -198,6 +198,7 @@ const SideBar = ({
     fetchPointData();
     fetchMyStock();
     fetchMyFinances();
+    fetchProfit();
   }, [userPoint]);
 
   // 검색 필터링
