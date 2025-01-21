@@ -14,7 +14,7 @@ const News = () => {
   const fetchPrediction = async () => {
     try {
       const response = await NewsAPI.fetchPredicData();
-      console.log(response.data);
+      console.log(response);
       setPredictionData(response.data);
     } catch (error) {
       console.error("Error fetching prediction data", error);
@@ -24,7 +24,6 @@ const News = () => {
   const fetchNews = async (company) => {
     try {
       const response = await NewsAPI.fetchNewsData(company);
-      console.log("News Data:", response.data);
       setNewsData(response.data);
     } catch (error) {
       console.error("Error fetching news data", error);
@@ -115,20 +114,30 @@ const News = () => {
             </tr>
           </thead>
           <tbody>
-            {predictionData.map((news, index) => (
-              <tr key={index}>
-                <td>{index + 1}</td>
-                <td>{truncateText(stripHtmlTags(news.articleSubject), 40)}</td>
-                <td>{truncateText(stripHtmlTags(news.articleSummary), 40)}</td>
-                <td>{news.articlePredictionContents || "예측중"}</td>
-                <td>{news.articlePredictionValue || "예측중"}</td>
-                <td>
-                  <a href={news.originalUrl} target="_blank" rel="noopener noreferrer">
-                    {"주소"}
-                  </a>
-                </td>
-              </tr>
-            ))}
+            {predictionData
+              .filter((news) => news.companyName === selectedCompany) // 필터링
+              .map((news, index) => (
+                <tr key={index}>
+                  <td>{index + 1}</td>
+                  <td>
+                    {truncateText(stripHtmlTags(news.articleSubject), 40)}
+                  </td>
+                  <td>
+                    {truncateText(stripHtmlTags(news.articleSummary), 40)}
+                  </td>
+                  <td>{news.articlePredictionContents || "예측중"}</td>
+                  <td>{news.articlePredictionValue || "예측중"}</td>
+                  <td>
+                    <a
+                      href={news.originalUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {"주소"}
+                    </a>
+                  </td>
+                </tr>
+              ))}
           </tbody>
           <tfoot>
             <tr>
